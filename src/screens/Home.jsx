@@ -6,7 +6,7 @@ const createEmptyBoard = (size) => {
   for (let i = 0; i < size; i++) {
     matrix[i] = new Array(size);
     for (let j = 0; j < size; j++) {
-      matrix[i][j] = {valid: false};
+      matrix[i][j] = {valid:false, side1: 3, side2: 3, isLaying: true };
     }
   }
   return matrix;
@@ -23,10 +23,10 @@ class Home extends React.Component {
     super(props);
     const initialBoard = setInitialBoard(5);
     this.state = {
-      cells:initialBoard/* [
+      cells:/*initialBoard*/ [
         [{valid: true}, {valid:false, side1: 3, side2: 3, isLaying: true }],
         [{valid: true}, {valid:false, side1: 3, side2: 2, isLaying: false }]
-      ]*/
+      ]
     };
   }
 
