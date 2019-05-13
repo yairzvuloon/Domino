@@ -12,7 +12,7 @@ const getDegree = (isLaying, side1, side2) => {
 
   return deg;
 };
-
+//the format of piece image name is "p{minNumberSide}_{maxNumberSide}"
 const getImageName = (side1, side2) => {
   return "p" + Math.min(side1, side2) + "_" + Math.max(side1, side2);
 };
