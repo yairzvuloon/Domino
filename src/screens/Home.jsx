@@ -1,5 +1,7 @@
 import React from "react";
 import Board from "../components/Board.jsx";
+import HomeStyle from "../style/HomeStyle.css";
+
 
 const createEmptyBoard = (size) => {
   let matrix = new Array(size);
@@ -21,19 +23,18 @@ board[mid][mid]={valid: true};
 class Home extends React.Component {
   constructor(props) {
     super(props);
-    const initialBoard = setInitialBoard(5);
+    const initialBoard = setInitialBoard(57);
     this.state = {
-      cells:/*initialBoard*/ [
+      cells:initialBoard /*[
         [{valid: true}, {valid:false, side1: 3, side2: 3, isLaying: true }],
         [{valid: true}, {valid:false, side1: 3, side2: 2, isLaying: false }]
-      ]
+      ]*/
     };
   }
 
   render() {
     return (
-      <div>
-        <h1>Domino</h1>
+      <div id="home">
         <Board cells={this.state.cells} />
       </div>
     );

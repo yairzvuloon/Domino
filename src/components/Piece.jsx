@@ -37,11 +37,11 @@ export const EmptyPiece = () => <div style={{ ...style.container }} />;
 export const ValidPiece = () => <div style={{ ...style.ValidPiece }} />;
 
 
-const size = "10vw";
+const size = "9vw";
 const style = {
   image: {
-    maxWidth: size,
-    maxHeight: size
+    width: size,
+    height: size,
   },
   container: {
     width: size,

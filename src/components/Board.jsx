@@ -31,7 +31,7 @@ const BoardRow = props => {
 const Board = props => {
   const { cells } = props;
   return (
-    <table>
+    <table id="boardGame">
       <tbody>
         {cells.map((row, i) => (
           <tr key={i}>
