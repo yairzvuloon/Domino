@@ -8,7 +8,7 @@ const createEmptyBoard = size => {
   for (let i = 0; i < size; i++) {
     matrix[i] = new Array(size);
     for (let j = 0; j < size; j++) {
-      matrix[i][j] = new card(false);
+      matrix[i][j] = new Card(false);
     }
   }
   return matrix;
@@ -78,8 +78,7 @@ class DominoBox {
     return ret;
   }
 }
-
-class card {
+class Card {
   constructor(i_Valid, i_Side1, i_Side2, i_IsLaying) {
     this.valid = i_Valid;
     this.side1 = i_Side1;
@@ -103,12 +102,20 @@ class Home extends React.Component {
   render() {
     return (
       <div id="homeContainer">
-      <div id="boardFrame">
-        <Board cells={this.state.boardMap} />
+        <div id="boardFrame">
+          <Board
+            cells={this.state.boardMap}
+            onClick={(i, j) => this.handleOnClick(i, j)}
+          />
+        </div>
+        <Cart id="cartStyle" cart={this.state.cartMap} />
       </div>
-      <Cart id="cartStyle" cart={this.state.cartMap} /> 
-      </div>  
     );
+  }
+
+  handleOnClick(i, j) {
+    alert("clicked" + i + j);
+    this.setState((this.state.boardMap[i][j] = new Card(true, 1, 0, true)));
   }
 }
 
