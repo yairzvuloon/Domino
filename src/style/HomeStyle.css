@@ -3,8 +3,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-left: 100%;
-  margin-right: 100%;
+  margin-left: 50%;
+  margin-right: 50%;
 }
 #boardFrame{
 max-width: 90vw;
