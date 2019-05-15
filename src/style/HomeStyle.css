@@ -1,11 +1,22 @@
-#home{
-display: inline-block;
+#homeContainer{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-left: 100%;
+  margin-right: 100%;
+}
+#boardFrame{
 max-width: 90vw;
 width: 90vw;
 max-height: 40vw;
 height: 40vw;
 overflow: auto;
-margin-left: 100%;
-margin-right: 100%;
+/*margin-left: 100%;
+margin-right: 100%;*/
 }
+
+
+
+
 

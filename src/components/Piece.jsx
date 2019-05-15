@@ -46,7 +46,7 @@ const style = {
   container: {
     width: size,
     height: size,
-    backgroundColor: "white"
+    backgroundColor: "red"
   }, ValidPiece:{
     width: size,
     height: size,

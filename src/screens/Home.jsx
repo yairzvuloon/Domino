@@ -102,10 +102,12 @@ class Home extends React.Component {
 
   render() {
     return (
-      <div id="home">
+      <div id="homeContainer">
+      <div id="boardFrame">
         <Board cells={this.state.boardMap} />
-        <Cart cart={this.state.cartMap} />
       </div>
+      <Cart id="cartStyle" cart={this.state.cartMap} /> 
+      </div>  
     );
   }
 }
