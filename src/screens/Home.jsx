@@ -1,5 +1,6 @@
 import React from "react";
 import Board from "../components/Board.jsx";
+import Cart from "../components/Cart.jsx";
 import HomeStyle from "../style/HomeStyle.css";
 
 const createEmptyBoard = size => {
@@ -37,7 +38,7 @@ const createCardsArray = () => {
   let arrIndex = 0;
   for (let i = 0; i < 7; i++) {
     for (let j = i; j < 7; j++) {
-      arr[arrIndex] = { side1: i, side2: j };
+      arr[arrIndex] = { valid: true, side1: i, side2: j };
       console.log(arr[arrIndex]);
       arrIndex++;
     }
@@ -72,7 +73,7 @@ class DominoBox {
       ret = this.cardsArray[cardIndex];
       this.indexesCardsBoxIndex--;
       console.log("in getCard()");
-      console.log("card: " + ret.side1+ ", "+ ret.side2);
+      console.log("card: " + ret.side1 + ", " + ret.side2);
     }
     return ret;
   }
@@ -94,11 +95,8 @@ class Home extends React.Component {
     const initialBoard = setInitialBoard(57);
     const initialCart = setInitialCart(this.cardsBox);
     this.state = {
-      boardMap: initialBoard /*[
-        [{valid: true}, {valid:false, side1: 3, side2: 3, isLaying: true }],
-        [{valid: true}, {valid:false, side1: 3, side2: 2, isLaying: false }]
-      ]*/,
-      cart: initialCart
+      boardMap: initialBoard,
+      cartMap: initialCart
     };
   }
 
@@ -106,6 +104,7 @@ class Home extends React.Component {
     return (
       <div id="home">
         <Board cells={this.state.boardMap} />
+        <Cart cart={this.state.cartMap} />
       </div>
     );
   }
