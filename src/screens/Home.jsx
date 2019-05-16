@@ -95,7 +95,8 @@ class Home extends React.Component {
     const initialCart = setInitialCart(this.cardsBox);
     this.state = {
       boardMap: initialBoard,
-      cartMap: initialCart
+      cartMap: initialCart, 
+      selectedCard: null
     };
   }
 
@@ -117,13 +118,23 @@ class Home extends React.Component {
     );
   }
 
-  handleBoardClick(i, j) {
-    console.log("clicked" + i + j);
+  locatePieceOnBoard(row, col, card) {
     const newBoardMap = this.state.boardMap.slice();
-    newBoardMap[i][j] = new Card(false, 1, 0, true);
+    newBoardMap[row][col] = card;
     this.setState(() => ({ boardMap: newBoardMap }));
   }
 
+  handleBoardClick(i, j) {
+   if(this.state.selectedCard) 
+   {
+    //we need to that in the next: isLaying=getPosition(i,j)
+    const {side1, side2} = this.state.selectedCard;
+    console.log("clicked" + i + j);
+    let card = new Card(false, side1, side2, false);
+    this.locatePieceOnBoard(i, j, card);
+   }
+  }
+  
   handleCartClick(i, value) {
     console.log("clicked" + i);
     const newCartMap = this.state.cartMap.slice();
@@ -131,7 +142,7 @@ class Home extends React.Component {
       newCartMap[i].valid = undefined;
     }
     newCartMap[i].valid = true;
-    this.setState(() => ({ cartMap: newCartMap }));
+    this.setState(() => ({ cartMap: newCartMap, selectedCard:value }));
   }
 }
 
