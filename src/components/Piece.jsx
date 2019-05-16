@@ -18,14 +18,19 @@ const getImageName = (side1, side2) => {
 };
 
 const Piece = props => {
-  const { side1, side2, isLaying } = props;
+  const { valid, side1, side2, isLaying } = props;
+  const cardInCatSelected = valid;
 
   const imgName = getImageName(side1, side2);
   const imagePath = require("../resources/pieces/" + imgName + ".svg");
   const degree = getDegree(isLaying, side1, side2);
   const transform = "rotate(" + degree + "deg)";
+  let styleCopy = null;
+  cardInCatSelected
+    ? (styleCopy = { ...style.ValidPiece })
+    : (styleCopy = { ...style.container });
   return (
-    <div style={{ ...style.container }}>
+    <div style={styleCopy}>
       <img src={imagePath} style={{ ...style.image, transform }} />
     </div>
   );
@@ -36,18 +41,18 @@ export default Piece;
 export const EmptyPiece = () => <div style={{ ...style.container }} />;
 export const ValidPiece = () => <div style={{ ...style.ValidPiece }} />;
 
-
 const size = "9vw";
 const style = {
   image: {
     width: size,
-    height: size,
+    height: size
   },
   container: {
     width: size,
     height: size,
-    backgroundColor: "red"
-  }, ValidPiece:{
+    backgroundColor: "white"
+  },
+  ValidPiece: {
     width: size,
     height: size,
     backgroundColor: "green"

@@ -38,7 +38,7 @@ const createCardsArray = () => {
   let arrIndex = 0;
   for (let i = 0; i < 7; i++) {
     for (let j = i; j < 7; j++) {
-      arr[arrIndex] = { valid: true, side1: i, side2: j };
+      arr[arrIndex] = { valid: undefined, side1: i, side2: j };
       console.log(arr[arrIndex]);
       arrIndex++;
     }
@@ -105,17 +105,33 @@ class Home extends React.Component {
         <div id="boardFrame">
           <Board
             cells={this.state.boardMap}
-            onClick={(i, j) => this.handleOnClick(i, j)}
+            onClick={(i, j) => this.handleBoardClick(i, j)}
           />
         </div>
-        <Cart id="cartStyle" cart={this.state.cartMap} />
+        <Cart
+          id="cartStyle"
+          cart={this.state.cartMap}
+          onClick={(i, value) => this.handleCartClick(i, value)}
+        />
       </div>
     );
   }
 
-  handleOnClick(i, j) {
-    alert("clicked" + i + j);
-    this.setState((this.state.boardMap[i][j] = new Card(true, 1, 0, true)));
+  handleBoardClick(i, j) {
+    console.log("clicked" + i + j);
+    const newBoardMap = this.state.boardMap.slice();
+    newBoardMap[i][j] = new Card(false, 1, 0, true);
+    this.setState(() => ({ boardMap: newBoardMap }));
+  }
+
+  handleCartClick(i, value) {
+    console.log("clicked" + i);
+    const newCartMap = this.state.cartMap.slice();
+    for (let i = 0; i < 7; i++) {
+      newCartMap[i].valid = undefined;
+    }
+    newCartMap[i].valid = true;
+    this.setState(() => ({ cartMap: newCartMap }));
   }
 }
 

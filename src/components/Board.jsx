@@ -9,7 +9,7 @@ const BoardRow = props => {
     const { valid, side1, side2, isLaying } = dominoPiece;
 
     let ret = null;
-    if (valid && side1 != undefined)
+    if (!valid && side1 != undefined)
       ret = (
         <td key={j}>
           <Piece side1={side1} side2={side2} isLaying={isLaying} />
@@ -17,7 +17,7 @@ const BoardRow = props => {
       );
     else if (!valid && side1 === undefined)
       ret = (
-        <td key={j} onClick={() => props.onClick(indexRow, j)}>
+        <td key={j}>
           <EmptyPiece />
         </td>
       );

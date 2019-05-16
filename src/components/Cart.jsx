@@ -11,13 +11,22 @@ const Cart = props => {
           {cart.map((dominoPiece, j) => {
             const { valid, side1, side2 } = dominoPiece;
             let ret = null;
-            if (valid) {
+            if (valid===undefined) {
               ret = (
-                <td key={j}>
+                <td key={j} onClick={() => props.onClick(j,dominoPiece)}>
                   <Piece side1={side1} side2={side2} isLaying={false} />
                 </td>
               );
-            } else {
+            }
+            else if(valid)
+            {
+              ret = (
+                <td key={j} onClick={() => props.onClick(j,dominoPiece)}>
+                  <Piece valid={true} side1={side1} side2={side2} isLaying={false} />
+                </td>
+              ); 
+            }
+             else {
               ret = (
                 <td key={j}>
                   <EmptyPiece />
