@@ -95,9 +95,10 @@ class Home extends React.Component {
     const initialCart = setInitialCart(this.cardsBox);
     this.state = {
       boardMap: initialBoard,
-      cartMap: initialCart, 
+      cartMap: initialCart,
       selectedCard: null
     };
+    this.validLocationsByNumber = [...Array(7)].map(x => Array(0));
   }
 
   render() {
@@ -117,24 +118,108 @@ class Home extends React.Component {
       </div>
     );
   }
+  isEmptyAndNotValid(row, col) {
+    const { boardMap } = this.state;
+    return (
+      boardMap[row][col].valid !== true &&
+      boardMap[row][col].isLaying === undefined
+    );
+  }
+
+  setCellValid(board, row, col) {
+    console.log(
+      "in SetCellValid" + "in col:" + col + "in rows" + row + board[row][col]
+    );
+    board[row][col].valid = true;
+  }
+
+  updateValidCellsInBoard(board, card) {
+    const { side1, side2 } = card;
+
+    for (let col = 0; col < this.validLocationsByNumber[side1].length; col++) {
+      this.setCellValid(
+        board,
+        this.validLocationsByNumber[side1][col].i,
+        this.validLocationsByNumber[side1][col].j
+      );
+    }
+
+    for (let col = 0; col < this.validLocationsByNumber[side2].length; col++) {
+      this.setCellValid(
+        board,
+        this.validLocationsByNumber[side2][col].i,
+        this.validLocationsByNumber[side2][col].j
+      );
+    }
+  }
+
+  updateValidLocationsByNumber(row, col, card) {
+    const { isLaying } = card;
+    if (isLaying) {
+      if (this.isEmptyAndNotValid(row, col - 1)) {
+        this.validLocationsByNumber[card.side1].push({
+          i: row,
+          j: col - 1,
+        });
+      }
+      if (this.isEmptyAndNotValid(row, col + 1)) {
+        this.validLocationsByNumber[card.side2].push({
+          i: row,
+          j: col + 1,
+        });
+      }
+    } else if (isLaying === false) {
+      if (this.isEmptyAndNotValid(row - 1, col)) {
+        this.validLocationsByNumber[card.side1].push({
+          i: row - 1,
+          j: col,
+         // laying: isLaying
+        });
+      }
+      if (this.isEmptyAndNotValid(row + 1, col)) {
+        this.validLocationsByNumber[card.side2].push({
+          i: row + 1,
+          j: col,
+        });
+      }
+    }
+  }
 
   locatePieceOnBoard(row, col, card) {
     const newBoardMap = this.state.boardMap.slice();
+    if (card.side1 === card.side2) {
+      card.isLaying = !card.isLaying;
+    }
     newBoardMap[row][col] = card;
+    this.updateValidLocationsByNumber(row, col, card);
     this.setState(() => ({ boardMap: newBoardMap }));
   }
 
   handleBoardClick(i, j) {
-   if(this.state.selectedCard) 
-   {
-    //we need to that in the next: isLaying=getPosition(i,j)
-    const {side1, side2} = this.state.selectedCard;
-    console.log("clicked" + i + j);
-    let card = new Card(false, side1, side2, false);
-    this.locatePieceOnBoard(i, j, card);
-   }
+    const { boardMap } = this.state;
+    if (this.state.selectedCard) {
+      //we need to that in the next: isLaying=getPosition(i,j)
+      const { side1, side2 } = this.state.selectedCard;
+      console.log("clicked" + i + j);
+     
+      let card = null;
+      if(!boardMap[28][28].valid)
+      {
+        card = new Card(false, side1, side2, true);
+      }
+      else if (!boardMap[i][j + 1].valid) {
+        card = new Card(false, side2, side1, true);
+      } else if (!boardMap[i][j - 1].valid) {
+        card = new Card(false, side1, side2, true);
+      } else if (!boardMap[i + 1][j].valid) {
+        card = new Card(false, side1, side2, false);
+      } else {
+        card = new Card(false, side2, side1, false);
+      }
+      this.locatePieceOnBoard(i, j, card);
+    }
   }
-  
+
   handleCartClick(i, value) {
     console.log("clicked" + i);
     const newCartMap = this.state.cartMap.slice();
@@ -142,7 +227,13 @@ class Home extends React.Component {
       newCartMap[i].valid = undefined;
     }
     newCartMap[i].valid = true;
-    this.setState(() => ({ cartMap: newCartMap, selectedCard:value }));
+    const newBoardMap = this.state.boardMap.slice();
+    this.updateValidCellsInBoard(newBoardMap, value);
+    this.setState(() => ({
+      boardMap: newBoardMap,
+      cartMap: newCartMap,
+      selectedCard: value
+    }));
   }
 }
 
