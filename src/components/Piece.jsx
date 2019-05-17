@@ -2,7 +2,7 @@ import React from "react";
 
 const getDegree = (isLaying, side1, side2) => {
   var deg;
-  if (!isLaying && side1 < side2) deg = 0;
+  if (!isLaying && side1 <= side2) deg = 0;
   else {
     if (isLaying === true) deg = 90;
     else deg = 180;

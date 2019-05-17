@@ -159,30 +159,40 @@ class Home extends React.Component {
       if (this.isEmptyAndNotValid(row, col - 1)) {
         this.validLocationsByNumber[card.side1].push({
           i: row,
-          j: col - 1,
+          j: col - 1
         });
       }
       if (this.isEmptyAndNotValid(row, col + 1)) {
         this.validLocationsByNumber[card.side2].push({
           i: row,
-          j: col + 1,
+          j: col + 1
         });
       }
     } else if (isLaying === false) {
       if (this.isEmptyAndNotValid(row - 1, col)) {
         this.validLocationsByNumber[card.side1].push({
           i: row - 1,
-          j: col,
-         // laying: isLaying
+          j: col
+          // laying: isLaying
         });
       }
       if (this.isEmptyAndNotValid(row + 1, col)) {
         this.validLocationsByNumber[card.side2].push({
           i: row + 1,
-          j: col,
+          j: col
         });
       }
     }
+  }
+
+  removeValidLocation(row, col, card) {
+    let value = { row, col };
+    this.validLocationsByNumber[card.side1] = this.validLocationsByNumber[
+      card.side1
+    ].filter(item => item === value);
+    this.validLocationsByNumber[card.side2] = this.validLocationsByNumber[
+      card.side2
+    ].filter(item => item === value);
   }
 
   locatePieceOnBoard(row, col, card) {
@@ -191,6 +201,7 @@ class Home extends React.Component {
       card.isLaying = !card.isLaying;
     }
     newBoardMap[row][col] = card;
+    this.removeValidLocation(row, col, card);
     this.updateValidLocationsByNumber(row, col, card);
     this.setState(() => ({ boardMap: newBoardMap }));
   }
@@ -201,22 +212,22 @@ class Home extends React.Component {
       //we need to that in the next: isLaying=getPosition(i,j)
       const { side1, side2 } = this.state.selectedCard;
       console.log("clicked" + i + j);
-     
-      let card = null;
-      if(!boardMap[28][28].valid)
-      {
-        card = new Card(false, side1, side2, true);
-      }
-      else if (!boardMap[i][j + 1].valid) {
+      let row = i;
+      let col = j;
+      let card = new Card(false, side1, side2, true);
+      if (
+        boardMap[row][col + 1].side1 === side1 ||
+        boardMap[row][col + 1].side2 === side2||
+        boardMap[row][col - 1].side1 === side1 ||
+        boardMap[row][col - 1].side2 === side2 ||
+        boardMap[row - 1][col].side1 === side1 ||
+        boardMap[row - 1][col].side2 === side2 ||
+        boardMap[row + 1][col].side1 === side1||
+        boardMap[row + 1][col].side2 === side2
+      ) {
         card = new Card(false, side2, side1, true);
-      } else if (!boardMap[i][j - 1].valid) {
-        card = new Card(false, side1, side2, true);
-      } else if (!boardMap[i + 1][j].valid) {
-        card = new Card(false, side1, side2, false);
-      } else {
-        card = new Card(false, side2, side1, false);
       }
-      this.locatePieceOnBoard(i, j, card);
+      this.locatePieceOnBoard(i, col, card);
     }
   }
 
