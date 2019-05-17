@@ -3,58 +3,6 @@ import Board from "../components/Board.jsx";
 import Cart from "../components/Cart.jsx";
 import HomeStyle from "../style/HomeStyle.css";
 
-const createEmptyBoard = size => {
-  let matrix = new Array(size);
-  for (let i = 0; i < size; i++) {
-    matrix[i] = new Array(size);
-    for (let j = 0; j < size; j++) {
-      matrix[i][j] = new Card(false);
-    }
-  }
-  return matrix;
-};
-
-const setInitialBoard = size => {
-  let board = createEmptyBoard(size);
-  let mid = Math.floor(size / 2);
-  board[mid][mid].valid = true;
-  return board;
-};
-
-const createShuffledArray = size => {
-  let a = new Array(size);
-  for (let i = 0; i < size; i++) {
-    a[i] = i;
-  }
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-};
-
-const createCardsArray = () => {
-  let arr = new Array(28);
-  let arrIndex = 0;
-  for (let i = 0; i < 7; i++) {
-    for (let j = i; j < 7; j++) {
-      arr[arrIndex] = { valid: undefined, side1: i, side2: j };
-      console.log(arr[arrIndex]);
-      arrIndex++;
-    }
-  }
-  return arr;
-};
-
-const setInitialCart = i_DominoBox => {
-  let cart = new Array(6);
-  for (let i = 0; i < 7; i++) {
-    cart[i] = i_DominoBox.getCard();
-    console.log("cart[" + i + "]: " + cart[i]);
-  }
-  return cart;
-};
-
 class DominoBox {
   constructor() {
     this.indexesCardsBox = createShuffledArray(28);
@@ -77,6 +25,30 @@ class DominoBox {
     }
     return ret;
   }
+  createShuffledArray = size => {
+    let a = new Array(size);
+    for (let i = 0; i < size; i++) {
+      a[i] = i;
+    }
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
+  createCardsArray = () => {
+    let arr = new Array(28);
+    let arrIndex = 0;
+    for (let i = 0; i < 7; i++) {
+      for (let j = i; j < 7; j++) {
+        arr[arrIndex] = { valid: undefined, side1: i, side2: j };
+        console.log(arr[arrIndex]);
+        arrIndex++;
+      }
+    }
+    return arr;
+  };
 }
 class Card {
   constructor(i_Valid, i_Side1, i_Side2, i_IsLaying) {
@@ -100,24 +72,23 @@ class Home extends React.Component {
     };
     this.validLocationsByNumber = [...Array(7)].map(x => Array(0));
   }
+  createEmptyBoard = size => {
+    let matrix = new Array(size);
+    for (let i = 0; i < size; i++) {
+      matrix[i] = new Array(size);
+      for (let j = 0; j < size; j++) {
+        matrix[i][j] = new Card(false);
+      }
+    }
+    return matrix;
+  };
 
-  render() {
-    return (
-      <div id="homeContainer">
-        <div id="boardFrame">
-          <Board
-            cells={this.state.boardMap}
-            onClick={(i, j) => this.handleBoardClick(i, j)}
-          />
-        </div>
-        <Cart
-          id="cartStyle"
-          cart={this.state.cartMap}
-          onClick={(i, value) => this.handleCartClick(i, value)}
-        />
-      </div>
-    );
-  }
+  setInitialBoard = size => {
+    let board = createEmptyBoard(size);
+    let mid = Math.floor(size / 2);
+    board[mid][mid].valid = true;
+    return board;
+  };
   isEmptyAndNotValid(row, col) {
     const { boardMap } = this.state;
     return (
@@ -189,10 +160,10 @@ class Home extends React.Component {
     let value = { row, col };
     this.validLocationsByNumber[card.side1] = this.validLocationsByNumber[
       card.side1
-    ].filter(item => item === value);
+    ].filter(item => item !== value);
     this.validLocationsByNumber[card.side2] = this.validLocationsByNumber[
       card.side2
-    ].filter(item => item === value);
+    ].filter(item => item !== value);
   }
 
   locatePieceOnBoard(row, col, card) {
@@ -217,12 +188,12 @@ class Home extends React.Component {
       let card = new Card(false, side1, side2, true);
       if (
         boardMap[row][col + 1].side1 === side1 ||
-        boardMap[row][col + 1].side2 === side2||
+        boardMap[row][col + 1].side2 === side2 ||
         boardMap[row][col - 1].side1 === side1 ||
         boardMap[row][col - 1].side2 === side2 ||
         boardMap[row - 1][col].side1 === side1 ||
         boardMap[row - 1][col].side2 === side2 ||
-        boardMap[row + 1][col].side1 === side1||
+        boardMap[row + 1][col].side1 === side1 ||
         boardMap[row + 1][col].side2 === side2
       ) {
         card = new Card(false, side2, side1, true);
@@ -245,6 +216,24 @@ class Home extends React.Component {
       cartMap: newCartMap,
       selectedCard: value
     }));
+  }
+
+  render() {
+    return (
+      <div id="homeContainer">
+        <div id="boardFrame">
+          <Board
+            cells={this.state.boardMap}
+            onClick={(i, j) => this.handleBoardClick(i, j)}
+          />
+        </div>
+        <Cart
+          id="cartStyle"
+          cart={this.state.cartMap}
+          onClick={(i, value) => this.handleCartClick(i, value)}
+        />
+      </div>
+    );
   }
 }
 
