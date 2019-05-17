@@ -189,10 +189,10 @@ class Home extends React.Component {
     let value = { row, col };
     this.validLocationsByNumber[card.side1] = this.validLocationsByNumber[
       card.side1
-    ].filter(item => item === value);
+    ].filter(item => item !== value);
     this.validLocationsByNumber[card.side2] = this.validLocationsByNumber[
       card.side2
-    ].filter(item => item === value);
+    ].filter(item => item !== value);
   }
 
   locatePieceOnBoard(row, col, card) {
