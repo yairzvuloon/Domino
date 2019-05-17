@@ -250,15 +250,3 @@ class Home extends React.Component {
 }
 
 export default Home;
-© 2019 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
