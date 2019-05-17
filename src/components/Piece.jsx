@@ -1,25 +1,25 @@
 import React from "react";
 
-const getDegree = (isLaying, side1, side2) => {
-  var deg;
-  if (!isLaying && side1 <= side2) deg = 0;
-  else {
-    if (isLaying === true) deg = 90;
-    else deg = 180;
-
-    if (side1 < side2) deg *= -1;
-  }
-
-  return deg;
-};
-//the format of piece image name is "p{minNumberSide}_{maxNumberSide}"
-const getImageName = (side1, side2) => {
-  return "p" + Math.min(side1, side2) + "_" + Math.max(side1, side2);
-};
-
 const Piece = props => {
   const { valid, side1, side2, isLaying } = props;
   const cardInCatSelected = valid;
+
+  const getDegree = (isLaying, side1, side2) => {
+    var deg;
+    if (!isLaying && side1 <= side2) deg = 0;
+    else {
+      if (isLaying === true) deg = 90;
+      else deg = 180;
+  
+      if (side1 < side2) deg *= -1;
+    }
+  
+    return deg;
+  };
+  //the format of piece image name is "p{minNumberSide}_{maxNumberSide}"
+  const getImageName = (side1, side2) => {
+    return "p" + Math.min(side1, side2) + "_" + Math.max(side1, side2);
+  };
 
   const imgName = getImageName(side1, side2);
   const imagePath = require("../resources/pieces/" + imgName + ".svg");
