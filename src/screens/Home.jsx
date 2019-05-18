@@ -2,26 +2,7 @@ import React from "react";
 import Board from "../components/Board.jsx";
 import Cart from "../components/Cart.jsx";
 import "../style/HomeStyle.css";
-import {DominoBoxLogic} from '../utilities/HomeUtility';
-
-const createEmptyBoard = size => {
-  let matrix = new Array(size);
-  for (let i = 0; i < size; i++) {
-    matrix[i] = new Array(size);
-    for (let j = 0; j < size; j++) {
-      matrix[i][j] = new Card(false);
-    }
-  }
-  return matrix;
-};
-
-const setInitialBoard = size => {
-  let board = createEmptyBoard(size);
-  let mid = Math.floor(size / 2);
-  board[mid][mid].valid = true;
-  return board;
-};
-
+import { DominoBoxLogic } from "../utilities/HomeUtility";
 
 class Card {
   constructor(i_Valid, i_Side1, i_Side2, i_IsLaying) {
@@ -32,11 +13,10 @@ class Card {
   }
 }
 
-
 class Home extends React.Component {
   constructor(props) {
     super(props);
-    const initialBoard = setInitialBoard(57);
+    const initialBoard = this.setInitialBoard(57);
     const initialCart = this.setInitialCart();
     this.state = {
       boardMap: initialBoard,
@@ -45,13 +25,32 @@ class Home extends React.Component {
     };
     this.validLocationsByNumber = [...Array(7)].map(x => Array(0));
   }
-   setInitialCart(){
+
+  createEmptyBoard(size) {
+    let matrix = new Array(size);
+    for (let i = 0; i < size; i++) {
+      matrix[i] = new Array(size);
+      for (let j = 0; j < size; j++) {
+        matrix[i][j] = new Card(false);
+      }
+    }
+    return matrix;
+  }
+
+  setInitialBoard(size) {
+    let board = this.createEmptyBoard(size);
+    let mid = Math.floor(size / 2);
+    board[mid][mid].valid = true;
+    return board;
+  }
+
+  setInitialCart() {
     let cart = new Array(6);
     for (let i = 0; i < 7; i++) {
       cart[i] = DominoBoxLogic.getCard();
     }
     return cart;
-  };
+  }
   isEmptyAndNotValid(row, col) {
     const { boardMap } = this.state;
     return (
