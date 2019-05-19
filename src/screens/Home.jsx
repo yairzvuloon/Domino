@@ -117,15 +117,44 @@ class Home extends React.Component {
       }
     }
   }
+  createCopyRow(matrix, i_Row) {
+    let size = matrix[i_Row].length;
+    const array = new Array(size);
+    for (let i = 0; i < size; i++) {
+      array[i] = matrix[i_Row][i];
+    }
+    return array;
+  }
 
   removeValidLocation(row, col, card) {
     let value = { row, col };
+
+  //   const array1 = this.createCopyRow(this.validLocationsByNumber, card.side1);
+  //   const array2 = this.createCopyRow(this.validLocationsByNumber, card.side2);
+
+  //   const copy_array1=array1.filter(item => item.i !== value.row && item.j !== value.col);
+  //   const copy_array2=array2.filter(item => item.i !== value.row && item.j !== value.col);
+   
+  //   for(let i=0;i<copy_array1.length;i++)
+  //   {
+  //     this.validLocationsByNumber[card.side1][i]=copy_array1[i];
+  //   }
+  //   this.validLocationsByNumber[card.side1].pop();
+
+
+  //   for(let i=0;i<copy_array2.length;i++)
+  //   {
+  //     this.validLocationsByNumber[card.side2][i]=copy_array2[i];
+  //   }
+  //   this.validLocationsByNumber[card.side2].pop();
+  //   //this.validLocationsByNumber[card.side1] = array1;
+  //  // this.validLocationsByNumber[card.side2] = array2;
     this.validLocationsByNumber[card.side1] = this.validLocationsByNumber[
       card.side1
-    ].filter(item => item !== value);
+    ].filter(item => item.i !== value.row&&item.j!== value.col);
     this.validLocationsByNumber[card.side2] = this.validLocationsByNumber[
       card.side2
-    ].filter(item => item !== value);
+    ].filter(item => item.i !== value.row&&item.j!== value.col);
   }
 
   locatePieceOnBoard(row, col, card) {
