@@ -23,9 +23,16 @@ class Home extends React.Component {
       cartMap: initialCart,
       selectedCard: null
     };
-    this.validLocationsByNumber = [...Array(7)].map(x => Array(0));
+    this.validLocationsArray = this.createEmptyValidLocations();
   }
 
+  createEmptyValidLocations() {
+    let matrix = new Array(7);
+    for (let i = 0; i < 7; i++) {
+      matrix[i] = new Array(0);
+    }
+    return matrix;
+  }
   createEmptyBoard(size) {
     let matrix = new Array(size);
     for (let i = 0; i < size; i++) {
@@ -69,48 +76,50 @@ class Home extends React.Component {
   updateValidCellsInBoard(board, card) {
     const { side1, side2 } = card;
 
-    for (let col = 0; col < this.validLocationsByNumber[side1].length; col++) {
+    for (let col = 0; col < this.validLocationsArray[side1].length; col++) {
       this.setCellValid(
         board,
-        this.validLocationsByNumber[side1][col].i,
-        this.validLocationsByNumber[side1][col].j
+        this.validLocationsArray[side1][col].i,
+        this.validLocationsArray[side1][col].j
       );
     }
 
-    for (let col = 0; col < this.validLocationsByNumber[side2].length; col++) {
+    for (let col = 0; col < this.validLocationsArray[side2].length; col++) {
       this.setCellValid(
         board,
-        this.validLocationsByNumber[side2][col].i,
-        this.validLocationsByNumber[side2][col].j
+        this.validLocationsArray[side2][col].i,
+        this.validLocationsArray[side2][col].j
       );
     }
   }
 
   updateValidLocationsByNumber(row, col, card) {
     const { isLaying } = card;
-    if (isLaying) {
+    const isJoker = card.side1 === card.side2;
+    if (isJoker || isLaying) {
       if (this.isEmptyAndNotValid(row, col - 1)) {
-        this.validLocationsByNumber[card.side1].push({
+        this.validLocationsArray[card.side1].push({
           i: row,
           j: col - 1
         });
       }
       if (this.isEmptyAndNotValid(row, col + 1)) {
-        this.validLocationsByNumber[card.side2].push({
+        this.validLocationsArray[card.side2].push({
           i: row,
           j: col + 1
         });
       }
-    } else if (isLaying === false) {
+    }
+    if (isJoker || isLaying === false) {
       if (this.isEmptyAndNotValid(row - 1, col)) {
-        this.validLocationsByNumber[card.side1].push({
+        this.validLocationsArray[card.side1].push({
           i: row - 1,
           j: col
           // laying: isLaying
         });
       }
       if (this.isEmptyAndNotValid(row + 1, col)) {
-        this.validLocationsByNumber[card.side2].push({
+        this.validLocationsArray[card.side2].push({
           i: row + 1,
           j: col
         });
@@ -118,7 +127,9 @@ class Home extends React.Component {
     }
   }
   createCopyRow(matrix, i_Row) {
-    let size = matrix[i_Row].length;
+    let size = 0;
+    if (matrix[i_Row]) size = matrix[i_Row].length;
+
     const array = new Array(size);
     for (let i = 0; i < size; i++) {
       array[i] = matrix[i_Row][i];
@@ -126,35 +137,40 @@ class Home extends React.Component {
     return array;
   }
 
+  removeRowColElementFromArray(arr, row, col) {
+    let val = false;
+    for (var idx = 0; idx < arr.length; idx++)
+      if (arr[idx].i === row && arr[idx].j === col) {
+        val = arr[idx].i === row && arr[idx].j === col;
+        arr.splice(idx, 1);
+        break;
+      }
+    return val;
+  }
   removeValidLocation(row, col, card) {
-    let value = { row, col };
+    let value = { i: row, j: col };
+    let length1 = this.validLocationsArray[card.side1].length;
+    let length2 = this.validLocationsArray[card.side2].length;
+    let arr1 = this.createCopyRow(this.validLocationsArray, card.side1);
+    let arr2 = this.createCopyRow(this.validLocationsArray, card.side2);
+    let output1 = this.removeRowColElementFromArray(arr1, row, col);
+    let output2 = this.removeRowColElementFromArray(arr2, row, col);
 
-  //   const array1 = this.createCopyRow(this.validLocationsByNumber, card.side1);
-  //   const array2 = this.createCopyRow(this.validLocationsByNumber, card.side2);
+    if (output1) {
+      length1--;
+      this.validLocationsArray[card.side1] = new Array(length1);
+      for (let i = 0; i < length1; i++) {
+        this.validLocationsArray[card.side1][i] = arr1[i];
+      }
+    }
 
-  //   const copy_array1=array1.filter(item => item.i !== value.row && item.j !== value.col);
-  //   const copy_array2=array2.filter(item => item.i !== value.row && item.j !== value.col);
-   
-  //   for(let i=0;i<copy_array1.length;i++)
-  //   {
-  //     this.validLocationsByNumber[card.side1][i]=copy_array1[i];
-  //   }
-  //   this.validLocationsByNumber[card.side1].pop();
-
-
-  //   for(let i=0;i<copy_array2.length;i++)
-  //   {
-  //     this.validLocationsByNumber[card.side2][i]=copy_array2[i];
-  //   }
-  //   this.validLocationsByNumber[card.side2].pop();
-  //   //this.validLocationsByNumber[card.side1] = array1;
-  //  // this.validLocationsByNumber[card.side2] = array2;
-    this.validLocationsByNumber[card.side1] = this.validLocationsByNumber[
-      card.side1
-    ].filter(item => item.i !== value.row&&item.j!== value.col);
-    this.validLocationsByNumber[card.side2] = this.validLocationsByNumber[
-      card.side2
-    ].filter(item => item.i !== value.row&&item.j!== value.col);
+    if (output2) {
+      length2--;
+      this.validLocationsArray[card.side2] = new Array(length2);
+      for (let i = 0; i < length2; i++) {
+        this.validLocationsArray[card.side2][i] = arr2[i];
+      }
+    }
   }
 
   locatePieceOnBoard(row, col, card) {
