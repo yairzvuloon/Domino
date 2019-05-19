@@ -184,26 +184,83 @@ class Home extends React.Component {
     this.setState(() => ({ boardMap: newBoardMap }));
   }
 
+  checkNeighborPiece(row, col) {
+    const { boardMap } = this.state;
+    let obj = null;
+    if (this.state.selectedCard) {
+      const { side1, side2 } = this.state.selectedCard;
+
+      if (
+        boardMap[row][col].side1 === side1 ||
+        boardMap[row][col].side2 === side2 ||
+        boardMap[row][col].side1 === side2 ||
+        boardMap[row][col].side2 === side1
+      ) {
+        obj = { row: row, col: col };
+      }
+    }
+    return obj;
+  }
+
   handleBoardClick(i, j) {
     const { boardMap } = this.state;
     if (this.state.selectedCard) {
       //we need to that in the next: isLaying=getPosition(i,j)
       const { side1, side2 } = this.state.selectedCard;
       console.log("clicked" + i + j);
+      let neighborsObj = {
+        up: null,
+        down: null,
+        left: null,
+        right: null
+      };
       let row = i;
       let col = j;
       let card = new Card(false, side1, side2, true);
-      if (
-        boardMap[row][col + 1].side1 === side1 ||
-        boardMap[row][col + 1].side2 === side2 ||
-        boardMap[row][col - 1].side1 === side1 ||
-        boardMap[row][col - 1].side2 === side2 ||
-        boardMap[row - 1][col].side1 === side1 ||
-        boardMap[row - 1][col].side2 === side2 ||
-        boardMap[row + 1][col].side1 === side1 ||
-        boardMap[row + 1][col].side2 === side2
-      ) {
-        card = new Card(false, side2, side1, true);
+
+      neighborsObj["up"] = this.checkNeighborPiece(row - 1, col);
+      neighborsObj["down"] = this.checkNeighborPiece(row + 1, col);
+      neighborsObj["left"] = this.checkNeighborPiece(row, col - 1);
+      neighborsObj["right"] = this.checkNeighborPiece(row, col + 1);
+
+      const neighborName = Object.keys(neighborsObj).filter(function(row) {
+        return neighborsObj[row] !== null;
+      });
+      console.log("neighbor" + neighborName);
+
+      const neighborLocation = neighborsObj[neighborName];
+      console.log("neighborLocation:" + neighborLocation);
+
+      if (neighborLocation) {
+        let piece = boardMap[neighborLocation.row][neighborLocation.col];
+        let position = piece.isLaying;
+       
+        console.log(neighborName[0] === "left");
+        if (piece.side1 === piece.side2) {
+          let copy_side1=side1;
+          let copy_side2=side2;
+          if (
+            (!position && neighborName[0] === "left") ||
+            (!position && neighborName[0] === "right") ||
+            (position && neighborName[0] === "up") ||
+            (position && neighborName[0] === "down")
+          ) {
+            position = !position;
+          }
+          if(neighborName[0] === "down"||neighborName[0] === "right")
+          {
+            let temp =copy_side1;
+            copy_side1=copy_side2;
+            copy_side2=temp;
+          }
+          card = new Card(false, copy_side2, copy_side1, position);
+        } else {
+          if (piece.side1 === side1 || piece.side2 === side2) {
+            card = new Card(false, side2, side1, position);
+          } else {
+            card = new Card(false, side1, side2, position);
+          }
+        }
       }
       this.locatePieceOnBoard(i, col, card);
     }
