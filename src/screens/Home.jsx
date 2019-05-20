@@ -201,7 +201,6 @@ class Home extends React.Component {
     }
     return obj;
   }
-
   handleBoardClick(i, j) {
     const { boardMap } = this.state;
     if (this.state.selectedCard) {
@@ -234,11 +233,9 @@ class Home extends React.Component {
       if (neighborLocation) {
         let piece = boardMap[neighborLocation.row][neighborLocation.col];
         let position = piece.isLaying;
-       
+
         console.log(neighborName[0] === "left");
         if (piece.side1 === piece.side2) {
-          let copy_side1=side1;
-          let copy_side2=side2;
           if (
             (!position && neighborName[0] === "left") ||
             (!position && neighborName[0] === "right") ||
@@ -247,13 +244,16 @@ class Home extends React.Component {
           ) {
             position = !position;
           }
-          if(neighborName[0] === "down"||neighborName[0] === "right")
-          {
-            let temp =copy_side1;
-            copy_side1=copy_side2;
-            copy_side2=temp;
+          card = new Card(false, side1, side2, position);
+          if (neighborName[0] === "down" || neighborName[0] === "right") {
+            if (side1 === piece.side1) {
+              card = new Card(false, side2, side1, position);
+            }
+          } else {
+            if (side2 === piece.side1) {
+              card = new Card(false, side2, side1, position);
+            }
           }
-          card = new Card(false, copy_side2, copy_side1, position);
         } else {
           if (piece.side1 === side1 || piece.side2 === side2) {
             card = new Card(false, side2, side1, position);
