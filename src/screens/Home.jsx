@@ -201,6 +201,16 @@ class Home extends React.Component {
     }
     return obj;
   }
+
+  checkJokerPiecePosition(neighborName, neighborPiece, side1, side2) {
+    return (
+      (side1 === neighborPiece.side1 &&
+        (neighborName === "down" || neighborName === "right")) ||
+      (side2 === neighborPiece.side2 &&
+        (neighborName === "up" || neighborName === "left"))
+    );
+  }
+
   handleBoardClick(i, j) {
     const { boardMap } = this.state;
     if (this.state.selectedCard) {
@@ -208,19 +218,19 @@ class Home extends React.Component {
       const { side1, side2 } = this.state.selectedCard;
       console.log("clicked" + i + j);
       let neighborsObj = {
-        up: null,
-        down: null,
-        left: null,
-        right: null
+        up: this.checkNeighborPiece(row - 1, col),
+        down:  this.checkNeighborPiece(row + 1, col),
+        left: this.checkNeighborPiece(row, col - 1),
+        right:  this.checkNeighborPiece(row, col + 1)
       };
       let row = i;
       let col = j;
       let card = new Card(false, side1, side2, true);
 
-      neighborsObj["up"] = this.checkNeighborPiece(row - 1, col);
-      neighborsObj["down"] = this.checkNeighborPiece(row + 1, col);
-      neighborsObj["left"] = this.checkNeighborPiece(row, col - 1);
-      neighborsObj["right"] = this.checkNeighborPiece(row, col + 1);
+      // neighborsObj["up"] = this.checkNeighborPiece(row - 1, col);
+      // neighborsObj["down"] = this.checkNeighborPiece(row + 1, col);
+      // neighborsObj["left"] = this.checkNeighborPiece(row, col - 1);
+      // neighborsObj["right"] = this.checkNeighborPiece(row, col + 1);
 
       const neighborName = Object.keys(neighborsObj).filter(function(row) {
         return neighborsObj[row] !== null;
@@ -245,14 +255,8 @@ class Home extends React.Component {
             position = !position;
           }
           card = new Card(false, side1, side2, position);
-          if (neighborName[0] === "down" || neighborName[0] === "right") {
-            if (side1 === piece.side1) {
-              card = new Card(false, side2, side1, position);
-            }
-          } else {
-            if (side2 === piece.side1) {
-              card = new Card(false, side2, side1, position);
-            }
+          if (this.checkJokerPiecePosition(neighborName[0], piece, side1, side2)) {
+            card = new Card(false, side2, side1, position);
           }
         } else {
           if (piece.side1 === side1 || piece.side2 === side2) {
