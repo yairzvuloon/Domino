@@ -1,4 +1,4 @@
-class DominoBox {
+class Manager {
   constructor() {
     this.indexesCardsBox = this.createShuffledArray(28);
     this.indexesCardsBoxIndex = 27;
@@ -47,4 +47,4 @@ class DominoBox {
   }
 }
 
-export const DominoBoxLogic = new DominoBox();
+export const DominoBoxLogic = new Manager();

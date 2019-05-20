@@ -218,19 +218,19 @@ class Home extends React.Component {
       const { side1, side2 } = this.state.selectedCard;
       console.log("clicked" + i + j);
       let neighborsObj = {
-        up: this.checkNeighborPiece(row - 1, col),
-        down:  this.checkNeighborPiece(row + 1, col),
-        left: this.checkNeighborPiece(row, col - 1),
-        right:  this.checkNeighborPiece(row, col + 1)
+        up: null,
+        down:  null,
+        left: null,
+        right: null
       };
       let row = i;
       let col = j;
       let card = new Card(false, side1, side2, true);
 
-      // neighborsObj["up"] = this.checkNeighborPiece(row - 1, col);
-      // neighborsObj["down"] = this.checkNeighborPiece(row + 1, col);
-      // neighborsObj["left"] = this.checkNeighborPiece(row, col - 1);
-      // neighborsObj["right"] = this.checkNeighborPiece(row, col + 1);
+      neighborsObj["up"] = this.checkNeighborPiece(row - 1, col);
+      neighborsObj["down"] = this.checkNeighborPiece(row + 1, col);
+      neighborsObj["left"] = this.checkNeighborPiece(row, col - 1);
+      neighborsObj["right"] = this.checkNeighborPiece(row, col + 1);
 
       const neighborName = Object.keys(neighborsObj).filter(function(row) {
         return neighborsObj[row] !== null;
