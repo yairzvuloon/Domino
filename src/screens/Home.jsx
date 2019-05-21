@@ -58,6 +58,7 @@ class Home extends React.Component {
     }
     return cart;
   }
+
   isEmptyAndNotValid(row, col) {
     const { boardMap } = this.state;
     return (
@@ -126,6 +127,7 @@ class Home extends React.Component {
       }
     }
   }
+
   createCopyRow(matrix, i_Row) {
     let size = 0;
     if (matrix[i_Row]) size = matrix[i_Row].length;
@@ -147,6 +149,7 @@ class Home extends React.Component {
       }
     return val;
   }
+
   removeValidLocation(row, col, card) {
     let value = { i: row, j: col };
     let length1 = this.validLocationsArray[card.side1].length;
@@ -173,6 +176,13 @@ class Home extends React.Component {
     }
   }
 
+  removePieceFromCart() {
+    const { index } = this.state.selectedCard;
+    const newCartMap = this.state.cartMap.slice();
+    newCartMap[index].valid = false;
+    this.setState(() => ({ cartMap: newCartMap }));
+  }
+
   locatePieceOnBoard(row, col, card) {
     const newBoardMap = this.state.boardMap.slice();
     if (card.side1 === card.side2) {
@@ -181,6 +191,7 @@ class Home extends React.Component {
     newBoardMap[row][col] = card;
     this.removeValidLocation(row, col, card);
     this.updateValidLocationsByNumber(row, col, card);
+    this.removePieceFromCart();
     this.setState(() => ({ boardMap: newBoardMap }));
   }
 
@@ -188,7 +199,7 @@ class Home extends React.Component {
     const { boardMap } = this.state;
     let obj = null;
     if (this.state.selectedCard) {
-      const { side1, side2 } = this.state.selectedCard;
+      const { side1, side2 } = this.state.selectedCard["value"];
 
       if (
         boardMap[row][col].side1 === side1 ||
@@ -215,11 +226,11 @@ class Home extends React.Component {
     const { boardMap } = this.state;
     if (this.state.selectedCard) {
       //we need to that in the next: isLaying=getPosition(i,j)
-      const { side1, side2 } = this.state.selectedCard;
+      const { side1, side2 } = this.state.selectedCard["value"];
       console.log("clicked" + i + j);
       let neighborsObj = {
         up: null,
-        down:  null,
+        down: null,
         left: null,
         right: null
       };
@@ -255,7 +266,9 @@ class Home extends React.Component {
             position = !position;
           }
           card = new Card(false, side1, side2, position);
-          if (this.checkJokerPiecePosition(neighborName[0], piece, side1, side2)) {
+          if (
+            this.checkJokerPiecePosition(neighborName[0], piece, side1, side2)
+          ) {
             card = new Card(false, side2, side1, position);
           }
         } else {
@@ -270,19 +283,19 @@ class Home extends React.Component {
     }
   }
 
-  handleCartClick(i, value) {
-    console.log("clicked" + i);
+  handleCartClick(indexCart, value) {
+    console.log("clicked" + indexCart);
     const newCartMap = this.state.cartMap.slice();
     for (let i = 0; i < 7; i++) {
-      newCartMap[i].valid = undefined;
+      if (newCartMap[i].valid) newCartMap[i].valid = undefined;
     }
-    newCartMap[i].valid = true;
+    newCartMap[indexCart].valid = true;
     const newBoardMap = this.state.boardMap.slice();
     this.updateValidCellsInBoard(newBoardMap, value);
     this.setState(() => ({
       boardMap: newBoardMap,
       cartMap: newCartMap,
-      selectedCard: value
+      selectedCard: { value: value, index: indexCart }
     }));
   }
 
