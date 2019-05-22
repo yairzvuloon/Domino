@@ -2,8 +2,7 @@ import React from "react";
 import Board from "../components/Board.jsx";
 import Cart from "../components/Cart.jsx";
 import "../style/HomeStyle.css";
-import { DominoBoxLogic } from "../utilities/HomeUtility";
-
+import { DominoStackLogic } from "../utilities/Manager";
 class Card {
   constructor(i_Valid, i_Side1, i_Side2, i_IsLaying) {
     this.valid = i_Valid;
@@ -12,7 +11,6 @@ class Card {
     this.isLaying = i_IsLaying;
   }
 }
-
 class Home extends React.Component {
   constructor(props) {
     super(props);
@@ -47,7 +45,7 @@ class Home extends React.Component {
   setInitialCart() {
     let cart = new Array(7);
     for (let i = 0; i < 7; i++) {
-      cart[i] = DominoBoxLogic.getCard();
+      cart[i] = DominoStackLogic.getCard();
     }
     return cart;
   }
@@ -125,7 +123,6 @@ class Home extends React.Component {
   }
 
   removeValidLocation(row, col, card) {
-    let value = { i: row, j: col };
     let length1 = this.validLocationsArray[card.side1].length;
     let length2 = this.validLocationsArray[card.side2].length;
     let arr1 = this.createCopyRow(this.validLocationsArray, card.side1);
@@ -152,25 +149,44 @@ class Home extends React.Component {
 
   removePieceFromCart() {
     const { index } = this.state.selectedCard;
-    const newCartMap = this.state.cartMap.slice();
-    newCartMap[index] = new Card(false);
+    this.setState(prevState => {
+      const newCartMap = this.getCartMapAfterRemoveCard(
+        index,
+        prevState.cartMap
+      );
+      return {
+        cartMap: newCartMap
+      };
+    });
+  }
 
-    this.setState(() => ({ cartMap: newCartMap }));
+  getCartMapAfterRemoveCard(index, cartMap) {
+    cartMap[index] = new Card(false);
+    return cartMap;
   }
 
   locatePieceOnBoard(row, col, card) {
-    const newBoardMap = this.state.boardMap.slice();
-
     if (card.side1 === card.side2) {
       card.isLaying = !card.isLaying;
     }
-    newBoardMap[row][col] = card;
-
     this.removeValidLocation(row, col, card);
     this.updateValidLocationsByNumber(row, col, card);
-    this.updateValidCellsInBoard(newBoardMap, card, false);
     this.removePieceFromCart();
-    this.setState(() => ({ boardMap: newBoardMap }));
+    this.setState(prevState => {
+      const newBoardMap = this.getUpdatedBoard(
+        [...prevState.boardMap],
+        card,
+        row,
+        col
+      );
+      return { boardMap: newBoardMap };
+    });
+  }
+
+  getUpdatedBoard(board, card, row, col) {
+    board[row][col] = card;
+    this.updateValidCellsInBoard(board, card, false);
+    return board;
   }
 
   checkNeighborPiece(row, col) {
@@ -200,61 +216,97 @@ class Home extends React.Component {
     );
   }
 
-  handleBoardClick(i, j) {
+  NeighborsObj(up, down, left, right) {
+    this.up = up;
+    this.down = down;
+    this.left = left;
+    this.right = right;
+  }
+
+  getNeighborsObj(row, col) {
+    let neighborsObj = new this.NeighborsObj(
+      this.checkNeighborPiece(row - 1, col),
+      this.checkNeighborPiece(row + 1, col),
+      this.checkNeighborPiece(row, col - 1),
+      this.checkNeighborPiece(row, col + 1)
+    );
+    return neighborsObj;
+  }
+
+  selectPositionForJoker(neighborName, piece) {
+    let position = piece.isLaying;
+    if (
+      (!position && neighborName === "left") ||
+      (!position && neighborName === "right") ||
+      (position && neighborName === "up") ||
+      (position && neighborName === "down")
+    ) {
+      position = !position;
+    }
+    return position;
+  }
+
+  createJokerPiece(neighborName, piece, side1, side2, position) {
+    let card;
+    if (this.checkJokerPiecePosition(neighborName[0], piece, side1, side2)) {
+      card = new Card(false, side2, side1, position);
+    } else {
+      card = new Card(false, side1, side2, position);
+    }
+    return card;
+  }
+
+  createRegularPiece(piece, side2, side1, position) {
+    let card = null;
+    if (piece.side1 === side1 || piece.side2 === side2) {
+      card = new Card(false, side2, side1, position);
+    } else {
+      card = new Card(false, side1, side2, position);
+    }
+    return card;
+  }
+
+  createPiece(neighborName, neighborPiece, side1, side2) {
+    let position = this.selectPositionForJoker(neighborName, neighborPiece);
+    let card = null;
+    if (neighborPiece.side1 === neighborPiece.side2) {
+      card = this.createJokerPiece(
+        neighborName[0],
+        neighborPiece,
+        side1,
+        side2,
+        position
+      );
+    } else {
+      card = this.createRegularPiece(neighborPiece, side2, side1, position);
+    }
+    return card;
+  }
+
+  runMove(row, col) {
     const { boardMap } = this.state;
     if (this.state.selectedCard) {
       const { side1, side2 } = this.state.selectedCard["value"];
-      let neighborsObj = {
-        up: null,
-        down: null,
-        left: null,
-        right: null
-      };
-      let row = i;
-      let col = j;
-      let card = new Card(false, side1, side2, true);
 
-      neighborsObj["up"] = this.checkNeighborPiece(row - 1, col);
-      neighborsObj["down"] = this.checkNeighborPiece(row + 1, col);
-      neighborsObj["left"] = this.checkNeighborPiece(row, col - 1);
-      neighborsObj["right"] = this.checkNeighborPiece(row, col + 1);
+      let neighborsObj = this.getNeighborsObj(row, col);
+
+      let card = new Card(false, side1, side2, true);
 
       const neighborName = Object.keys(neighborsObj).filter(function(row) {
         return neighborsObj[row] !== null;
       });
-      console.log("neighbor" + neighborName);
-
       const neighborLocation = neighborsObj[neighborName];
 
       if (neighborLocation) {
         let piece = boardMap[neighborLocation.row][neighborLocation.col];
-        let position = piece.isLaying;
-
-        if (piece.side1 === piece.side2) {
-          if (
-            (!position && neighborName[0] === "left") ||
-            (!position && neighborName[0] === "right") ||
-            (position && neighborName[0] === "up") ||
-            (position && neighborName[0] === "down")
-          ) {
-            position = !position;
-          }
-          card = new Card(false, side1, side2, position);
-          if (
-            this.checkJokerPiecePosition(neighborName[0], piece, side1, side2)
-          ) {
-            card = new Card(false, side2, side1, position);
-          }
-        } else {
-          if (piece.side1 === side1 || piece.side2 === side2) {
-            card = new Card(false, side2, side1, position);
-          } else {
-            card = new Card(false, side1, side2, position);
-          }
-        }
+        card = this.createPiece(neighborName[0], piece, side1, side2);
       }
-      this.locatePieceOnBoard(i, col, card);
+      this.locatePieceOnBoard(row, col, card);
     }
+  }
+
+  handleBoardClick(row, col) {
+    this.runMove(row, col);
   }
 
   toggleCellValid(board, row, col, booleanVal) {
@@ -299,7 +351,6 @@ class Home extends React.Component {
         isExist = true;
         break;
       }
-     
     }
     return isExist;
   }
@@ -308,18 +359,13 @@ class Home extends React.Component {
     return this.state.boardMap[28][28].valid;
   }
 
-  addNewPieceToCart(domino) {
-    this.setState(prevState => {
-      return {
-        cartMap: [...prevState.cartMap, domino]
-      };
-    });
-  }
-
   handleCartClick(indexCart, card) {
     console.log("clicked" + indexCart);
     this.setState(prevState => {
-      const boardMap=this.getBoardWithSignsCells([...prevState.boardMap], card)
+      const boardMap = this.getBoardWithSignsCells(
+        [...prevState.boardMap],
+        card
+      );
       const cartMap = this.getUpdatedCart([...prevState.cartMap], indexCart);
       return {
         boardMap: boardMap,
@@ -348,7 +394,7 @@ class Home extends React.Component {
       !this.isTheFirstTurn() &&
       !this.isExistPieceForValidSquares(cartMap)
     ) {
-      let domino = DominoBoxLogic.getCard();
+      let domino = DominoStackLogic.getCard();
       if (domino) {
         cartMap.push(domino);
       }

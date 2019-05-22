@@ -1,14 +1,10 @@
-class Manager {
+class DominoStack {
   constructor() {
     this.indexesCardsBox = this.createShuffledArray(28);
     this.indexesCardsBoxIndex = 27;
     this.cardsArray = this.createCardsArray();
   }
-  print() {
-    for (let i = 0; i < 28; i++) {
-      console.log(this.indexesCardsBox[i]);
-    }
-  }
+
   getCard() {
     let ret = null;
     if (this.indexesCardsBoxIndex > 0) {
@@ -47,4 +43,4 @@ class Manager {
   }
 }
 
-export const DominoBoxLogic = new Manager();
+export const DominoStackLogic = new DominoStack();
