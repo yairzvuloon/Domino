@@ -26,13 +26,6 @@ class Home extends React.Component {
     this.validLocationsArray = this.createEmptyValidLocations();
   }
 
-  createEmptyValidLocations() {
-    let matrix = new Array(7);
-    for (let i = 0; i < 7; i++) {
-      matrix[i] = new Array(0);
-    }
-    return matrix;
-  }
   createEmptyBoard(size) {
     let matrix = new Array(size);
     for (let i = 0; i < size; i++) {
@@ -59,39 +52,20 @@ class Home extends React.Component {
     return cart;
   }
 
+  createEmptyValidLocations() {
+    let matrix = new Array(7);
+    for (let i = 0; i < 7; i++) {
+      matrix[i] = new Array(0);
+    }
+    return matrix;
+  }
+
   isEmptyAndNotValid(row, col) {
     const { boardMap } = this.state;
     return (
       boardMap[row][col].valid !== true &&
       boardMap[row][col].isLaying === undefined
     );
-  }
-
-  setCellValid(board, row, col) {
-    console.log(
-      "in SetCellValid" + "in col:" + col + "in rows" + row + board[row][col]
-    );
-    board[row][col].valid = true;
-  }
-
-  updateValidCellsInBoard(board, card) {
-    const { side1, side2 } = card;
-
-    for (let col = 0; col < this.validLocationsArray[side1].length; col++) {
-      this.setCellValid(
-        board,
-        this.validLocationsArray[side1][col].i,
-        this.validLocationsArray[side1][col].j
-      );
-    }
-
-    for (let col = 0; col < this.validLocationsArray[side2].length; col++) {
-      this.setCellValid(
-        board,
-        this.validLocationsArray[side2][col].i,
-        this.validLocationsArray[side2][col].j
-      );
-    }
   }
 
   updateValidLocationsByNumber(row, col, card) {
@@ -189,8 +163,10 @@ class Home extends React.Component {
       card.isLaying = !card.isLaying;
     }
     newBoardMap[row][col] = card;
+
     this.removeValidLocation(row, col, card);
     this.updateValidLocationsByNumber(row, col, card);
+    this.updateValidCellsInBoard(newBoardMap, card, false);
     this.removePieceFromCart();
     this.setState(() => ({ boardMap: newBoardMap }));
   }
@@ -225,9 +201,7 @@ class Home extends React.Component {
   handleBoardClick(i, j) {
     const { boardMap } = this.state;
     if (this.state.selectedCard) {
-      //we need to that in the next: isLaying=getPosition(i,j)
       const { side1, side2 } = this.state.selectedCard["value"];
-      console.log("clicked" + i + j);
       let neighborsObj = {
         up: null,
         down: null,
@@ -249,13 +223,11 @@ class Home extends React.Component {
       console.log("neighbor" + neighborName);
 
       const neighborLocation = neighborsObj[neighborName];
-      console.log("neighborLocation:" + neighborLocation);
 
       if (neighborLocation) {
         let piece = boardMap[neighborLocation.row][neighborLocation.col];
         let position = piece.isLaying;
 
-        console.log(neighborName[0] === "left");
         if (piece.side1 === piece.side2) {
           if (
             (!position && neighborName[0] === "left") ||
@@ -283,20 +255,56 @@ class Home extends React.Component {
     }
   }
 
-  handleCartClick(indexCart, value) {
+  toggleCellValid(board, row, col, booleanVal) {
+    console.log(
+      "in SetCellValid" + "in col:" + col + "in rows" + row + board[row][col]
+    );
+    board[row][col].valid = booleanVal;
+  }
+
+  updateValidCellsInBoard(board, card, booleanVal) {
+    const { side1, side2 } = card;
+
+    for (let col = 0; col < this.validLocationsArray[side1].length; col++) {
+      this.toggleCellValid(
+        board,
+        this.validLocationsArray[side1][col].i,
+        this.validLocationsArray[side1][col].j,
+        booleanVal
+      );
+    }
+
+    for (let col = 0; col < this.validLocationsArray[side2].length; col++) {
+      this.toggleCellValid(
+        board,
+        this.validLocationsArray[side2][col].i,
+        this.validLocationsArray[side2][col].j,
+        booleanVal
+      );
+    }
+  }
+
+  handleCartClick(indexCart, card) {
     console.log("clicked" + indexCart);
+   
     const newCartMap = this.state.cartMap.slice();
     for (let i = 0; i < 7; i++) {
       if (newCartMap[i].valid) newCartMap[i].valid = undefined;
     }
     newCartMap[indexCart].valid = true;
     const newBoardMap = this.state.boardMap.slice();
-    this.updateValidCellsInBoard(newBoardMap, value);
+    if(this.state.selectedCard!==null)
+    {
+      let prevSelectedCard=this.state.selectedCard["value"];
+      this.updateValidCellsInBoard(newBoardMap, prevSelectedCard, false);
+    }
+    this.updateValidCellsInBoard(newBoardMap, card, true);
     this.setState(() => ({
       boardMap: newBoardMap,
       cartMap: newCartMap,
-      selectedCard: { value: value, index: indexCart }
+      selectedCard: { value: card, index: indexCart }
     }));
+    //this.updateValidCellsInBoard(newBoardMap, value, false);
   }
 
   render() {
