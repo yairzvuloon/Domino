@@ -45,7 +45,7 @@ class Home extends React.Component {
   }
 
   setInitialCart() {
-    let cart = new Array(6);
+    let cart = new Array(7);
     for (let i = 0; i < 7; i++) {
       cart[i] = DominoBoxLogic.getCard();
     }
@@ -153,12 +153,14 @@ class Home extends React.Component {
   removePieceFromCart() {
     const { index } = this.state.selectedCard;
     const newCartMap = this.state.cartMap.slice();
-    newCartMap[index].valid = false;
+    newCartMap[index] = new Card(false);
+
     this.setState(() => ({ cartMap: newCartMap }));
   }
 
   locatePieceOnBoard(row, col, card) {
     const newBoardMap = this.state.boardMap.slice();
+
     if (card.side1 === card.side2) {
       card.isLaying = !card.isLaying;
     }
@@ -256,9 +258,6 @@ class Home extends React.Component {
   }
 
   toggleCellValid(board, row, col, booleanVal) {
-    console.log(
-      "in SetCellValid" + "in col:" + col + "in rows" + row + board[row][col]
-    );
     board[row][col].valid = booleanVal;
   }
 
@@ -284,27 +283,77 @@ class Home extends React.Component {
     }
   }
 
+  isExistPieceForValidSquares(cartMap) {
+    let isExist = false;
+    let cards = new Array(7);
+    for (let i = 0; i < cartMap.length; i++) {
+      if (cartMap[i]) {
+        cards[cartMap[i].side1] = true;
+        cards[cartMap[i].side2] = true;
+      }
+      let cards1 = cards;
+    }
+    for (let j = 0; j < 7; j++) {
+      let num = this.validLocationsArray[j].length;
+      if (cards[j] && num > 0) {
+        isExist = true;
+        break;
+      }
+     
+    }
+    return isExist;
+  }
+
+  isTheFirstTurn() {
+    return this.state.boardMap[28][28].valid;
+  }
+
+  addNewPieceToCart(domino) {
+    this.setState(prevState => {
+      return {
+        cartMap: [...prevState.cartMap, domino]
+      };
+    });
+  }
+
   handleCartClick(indexCart, card) {
     console.log("clicked" + indexCart);
-   
-    const newCartMap = this.state.cartMap.slice();
-    for (let i = 0; i < 7; i++) {
-      if (newCartMap[i].valid) newCartMap[i].valid = undefined;
+    this.setState(prevState => {
+      const boardMap=this.getBoardWithSignsCells([...prevState.boardMap], card)
+      const cartMap = this.getUpdatedCart([...prevState.cartMap], indexCart);
+      return {
+        boardMap: boardMap,
+        cartMap: cartMap,
+        selectedCard: { value: card, index: indexCart }
+      };
+    });
+  }
+
+  getBoardWithSignsCells(board, card) {
+    if (this.state.selectedCard !== null) {
+      let prevSelectedCard = this.state.selectedCard["value"];
+      this.updateValidCellsInBoard(board, prevSelectedCard, false);
     }
-    newCartMap[indexCart].valid = true;
-    const newBoardMap = this.state.boardMap.slice();
-    if(this.state.selectedCard!==null)
-    {
-      let prevSelectedCard=this.state.selectedCard["value"];
-      this.updateValidCellsInBoard(newBoardMap, prevSelectedCard, false);
+    this.updateValidCellsInBoard(board, card, true);
+    return board;
+  }
+
+  getUpdatedCart(cartMap, indexCart) {
+    for (let i = 0; i < cartMap.length; i++) {
+      if (cartMap[i].valid) cartMap[i].valid = undefined;
     }
-    this.updateValidCellsInBoard(newBoardMap, card, true);
-    this.setState(() => ({
-      boardMap: newBoardMap,
-      cartMap: newCartMap,
-      selectedCard: { value: card, index: indexCart }
-    }));
-    //this.updateValidCellsInBoard(newBoardMap, value, false);
+    cartMap[indexCart].valid = true;
+
+    while (
+      !this.isTheFirstTurn() &&
+      !this.isExistPieceForValidSquares(cartMap)
+    ) {
+      let domino = DominoBoxLogic.getCard();
+      if (domino) {
+        cartMap.push(domino);
+      }
+    }
+    return cartMap;
   }
 
   render() {

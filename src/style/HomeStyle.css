@@ -23,8 +23,7 @@ margin-right: 100%;*/
     max-width: 700px;
     width:  700px;
     max-height: 100px;
-    /*margin-left: 100%;
-    margin-right: 100%;*/
+    overflow: scroll;
     }
 
 

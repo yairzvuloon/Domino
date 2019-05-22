@@ -38,7 +38,7 @@ class Manager {
     let arrIndex = 0;
     for (let i = 0; i < 7; i++) {
       for (let j = i; j < 7; j++) {
-        arr[arrIndex] = { valid: undefined, side1: i, side2: j };
+        arr[arrIndex] = { valid: undefined, side1: i, side2: j};
         console.log(arr[arrIndex]);
         arrIndex++;
       }
