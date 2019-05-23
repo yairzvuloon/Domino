@@ -1,6 +1,5 @@
 import React from "react";
 import Piece, { EmptyPiece } from "./Piece.jsx";
-import { ValidPiece } from "./Piece.jsx";
 
 const Cart = props => {
   const {cart} = props;

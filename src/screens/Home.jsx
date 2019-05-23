@@ -411,11 +411,13 @@ class Home extends React.Component {
             onClick={(i, j) => this.handleBoardClick(i, j)}
           />
         </div>
+       <div id="cartFrame">
         <Cart
           id="cartStyle"
           cart={this.state.cartMap}
           onClick={(i, value) => this.handleCartClick(i, value)}
         />
+        </div>
       </div>
     );
   }

@@ -1,31 +1,30 @@
-#homeContainer{
+#homeContainer {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   position: absolute;
-	top:0;
-	left: 0;
-	right: 0;
-	margin: auto;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
 }
-#boardFrame{
-max-width: 800px;
-width:  800px;
-max-height: 400px;
-height:  400px;
-overflow: scroll;
-/*margin-left: 100%;
+#boardFrame {
+  max-width: 800px;
+  width: 800px;
+  max-height: 400px;
+  height: 400px;
+  overflow: scroll;
+  /*margin-left: 100%;
 margin-right: 100%;*/
 }
-
-#cartStyle{
-    max-width: 700px;
-    width:  700px;
-    max-height: 100px;
-    overflow: scroll;
-    }
-
-
-
-
+#cartFrame{
+  max-width: 800px;
+  width: 800px;
+  overflow: scroll;
+}
+#cartStyle {
+  max-width: 10vw;
+  width: 10vw;
+  max-height: 3vw;
+}
