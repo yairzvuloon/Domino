@@ -207,7 +207,7 @@ class Home extends React.Component {
     return obj;
   }
 
-  checkJokerPiecePosition(neighborName, neighborPiece, side1, side2) {
+  checkPiecePosition(neighborName, neighborPiece, side1, side2) {
     return (
       (side1 === neighborPiece.side1 &&
         (neighborName === "down" || neighborName === "right")) ||
@@ -233,7 +233,7 @@ class Home extends React.Component {
     return neighborsObj;
   }
 
-  selectPositionForJoker(neighborName, piece) {
+  selectPosition(neighborName, piece) {
     let position = piece.isLaying;
     if (
       (!position && neighborName === "left") ||
@@ -246,40 +246,15 @@ class Home extends React.Component {
     return position;
   }
 
-  createJokerPiece(neighborName, piece, side1, side2, position) {
-    let card;
-    if (this.checkJokerPiecePosition(neighborName[0], piece, side1, side2)) {
-      card = new Card(false, side2, side1, position);
-    } else {
-      card = new Card(false, side1, side2, position);
-    }
-    return card;
-  }
-
-  createRegularPiece(piece, side2, side1, position) {
-    let card = null;
-    if (piece.side1 === side1 || piece.side2 === side2) {
-      card = new Card(false, side2, side1, position);
-    } else {
-      card = new Card(false, side1, side2, position);
-    }
-    return card;
-  }
-
   createPiece(neighborName, neighborPiece, side1, side2) {
-    let position = this.selectPositionForJoker(neighborName, neighborPiece);
-    let card = null;
-    if (neighborPiece.side1 === neighborPiece.side2) {
-      card = this.createJokerPiece(
-        neighborName[0],
-        neighborPiece,
-        side1,
-        side2,
-        position
-      );
-    } else {
-      card = this.createRegularPiece(neighborPiece, side2, side1, position);
+    let position = this.selectPosition(neighborName, neighborPiece);
+
+    let card = new Card(false, side1, side2, position);
+
+    if (this.checkPiecePosition(neighborName, neighborPiece, side1, side2)) {
+      card = new Card(false, side2, side1, position);
     }
+
     return card;
   }
 
@@ -411,12 +386,12 @@ class Home extends React.Component {
             onClick={(i, j) => this.handleBoardClick(i, j)}
           />
         </div>
-       <div id="cartFrame">
-        <Cart
-          id="cartStyle"
-          cart={this.state.cartMap}
-          onClick={(i, value) => this.handleCartClick(i, value)}
-        />
+        <div id="cartFrame">
+          <Cart
+            id="cartStyle"
+            cart={this.state.cartMap}
+            onClick={(i, value) => this.handleCartClick(i, value)}
+          />
         </div>
       </div>
     );
