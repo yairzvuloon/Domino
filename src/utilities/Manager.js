@@ -3,11 +3,14 @@ class DominoStack {
     this.indexesCardsBox = this.createShuffledArray(28);
     this.indexesCardsBoxIndex = 27;
     this.cardsArray = this.createCardsArray();
+    //because of the initial state of stack
+    this.numberOfDrawnFromStack = -7;
   }
 
   getCard() {
     let ret = null;
     if (this.indexesCardsBoxIndex > 0) {
+      this.numberOfDrawnFromStack++;
       let cardIndex = this.indexesCardsBox.pop();
       ret = this.cardsArray[cardIndex];
       this.indexesCardsBoxIndex--;
@@ -34,7 +37,7 @@ class DominoStack {
     let arrIndex = 0;
     for (let i = 0; i < 7; i++) {
       for (let j = i; j < 7; j++) {
-        arr[arrIndex] = { valid: undefined, side1: i, side2: j};
+        arr[arrIndex] = { valid: undefined, side1: i, side2: j };
         console.log(arr[arrIndex]);
         arrIndex++;
       }

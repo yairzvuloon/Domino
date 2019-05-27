@@ -2,7 +2,8 @@ import React from "react";
 
 const Piece = props => {
   const { valid, side1, side2, isLaying } = props;
-  const cardInCatSelected = valid;
+ 
+  const cardInCartSelected = valid;
 
   const getDegree = (isLaying, side1, side2) => {
     var deg;
@@ -26,7 +27,7 @@ const Piece = props => {
   const degree = getDegree(isLaying, side1, side2);
   const transform = "rotate(" + degree + "deg)";
   let styleCopy = null;
-  cardInCatSelected
+  cardInCartSelected
     ? (styleCopy = { ...style.ValidPiece })
     : (styleCopy = { ...style.container });
   return (

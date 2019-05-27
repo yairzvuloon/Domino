@@ -22,6 +22,7 @@ class Home extends React.Component {
       selectedCard: null
     };
     this.validLocationsArray = this.createEmptyValidLocations();
+    this.lastPiece = null;
   }
 
   createEmptyBoard(size) {
@@ -172,6 +173,7 @@ class Home extends React.Component {
     this.removeValidLocation(row, col, card);
     this.updateValidLocationsByNumber(row, col, card);
     this.removePieceFromCart();
+    this.lastPiece = card;
     this.setState(prevState => {
       const newBoardMap = this.getUpdatedBoard(
         [...prevState.boardMap],
