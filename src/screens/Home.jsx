@@ -402,13 +402,13 @@ class Home extends React.Component {
                         onClick={(i, value) => this.handleCartClick(i, value)}
                     />
                 </div>
-                {/*<div id='StatsFrame'>*/}
-                {/*    <Stats*/}
-                {/*        id="Statisitics"*/}
-                {/*        lastPiece={this.lastPiece}*/}
-                {/*        turn={this.turnNumber}*/}
-                {/*    />*/}
-                {/*</div>*/}
+                <div id='StatsFrame'>
+                    <Stats
+                        id="statistics"
+                        lastPiece={this.lastPiece}
+                        turn={this.turnNumber}
+                    />
+                </div>
             </div>
 
         );
