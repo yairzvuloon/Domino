@@ -5,8 +5,12 @@ class DominoStack {
     this.cardsArray = this.createCardsArray();
     //because of the initial state of stack
     this.numberOfDrawnFromStack = -7;
+    this.getNumOfWithdrawals = this.getNumOfWithdrawals.bind(this);
   }
 
+  getNumOfWithdrawals() {
+    return this.numberOfDrawnFromStack;
+  }
   getCard() {
     let ret = null;
     if (this.indexesCardsBoxIndex > 0) {

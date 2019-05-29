@@ -331,7 +331,6 @@ class Home extends React.Component {
         cards[cartMap[i].side1] = true;
         cards[cartMap[i].side2] = true;
       }
-      let cards1 = cards;
     }
     for (let j = 0; j < 7; j++) {
       let num = this.validLocationsArray[j].length;
@@ -385,25 +384,32 @@ class Home extends React.Component {
       let domino = DominoStackLogic.getCard();
       if (domino) {
         cartMap.push(domino);
+        this.setState(prevState => {
+          return { turn: prevState.turn + 1 };
+        });
       }
     }
     return cartMap;
   }
 
   render() {
+    const Withdrawals = DominoStackLogic.getNumOfWithdrawals();
     return (
       <div id="homeContainer">
+        <div id="StatsFrame">
+          <Stats
+            id="statistics"
+            currentScore={this.state.currentScore}
+            turn={this.state.turn}
+            withdrawals={Withdrawals}
+          />
+        </div>
         <div id="boardFrame">
           <Board
             cells={this.state.boardMap}
             onClick={(i, j) => this.handleBoardClick(i, j)}
           />
         </div>
-
-        <div id="StatsFrame">
-          <Stats id="statistics" currentScore={this.state.currentScore} turn={this.state.turn} />
-        </div>
-
         <div id="cartFrame">
           <Cart
             id="cartStyle"
