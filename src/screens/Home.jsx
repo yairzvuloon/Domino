@@ -20,10 +20,12 @@ class Home extends React.Component {
     this.state = {
       boardMap: initialBoard,
       cartMap: initialCart,
-      selectedCard: null
+      selectedCard: null,
+      currentScore: 0,
+      turn: 0
     };
     this.validLocationsArray = this.createEmptyValidLocations();
-    this.lastPiece = null;
+    //this.lastPiece = null;
   }
 
   createEmptyBoard(size) {
@@ -174,7 +176,8 @@ class Home extends React.Component {
     this.removeValidLocation(row, col, card);
     this.updateValidLocationsByNumber(row, col, card);
     this.removePieceFromCart();
-    this.lastPiece = card;
+    //this.lastPiece = card;
+    let addition = card.side1 + card.side2;
     this.setState(prevState => {
       const newBoardMap = this.getUpdatedBoard(
         [...prevState.boardMap],
@@ -182,8 +185,15 @@ class Home extends React.Component {
         row,
         col
       );
-      return { boardMap: newBoardMap };
+      const newScore = this.getUpdatedScore(prevState.currentScore, addition);
+      const newTurn = prevState.turn + 1;
+      return { boardMap: newBoardMap, currentScore: newScore, turn: newTurn };
     });
+  }
+
+  getUpdatedScore(score, addition) {
+    score += addition;
+    return score;
   }
 
   getUpdatedBoard(board, card, row, col) {
@@ -389,6 +399,11 @@ class Home extends React.Component {
             onClick={(i, j) => this.handleBoardClick(i, j)}
           />
         </div>
+
+        <div id="StatsFrame">
+          <Stats id="statistics" currentScore={this.state.currentScore} turn={this.state.turn} />
+        </div>
+
         <div id="cartFrame">
           <Cart
             id="cartStyle"
@@ -396,8 +411,6 @@ class Home extends React.Component {
             onClick={(i, value) => this.handleCartClick(i, value)}
           />
         </div>
-        <div id="StatsFrame" />
-        <Stats></Stats>
       </div>
     );
   }

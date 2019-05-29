@@ -2,7 +2,7 @@ import React from "react";
 
 const Piece = props => {
   const { valid, side1, side2, isLaying } = props;
- 
+
   const cardInCartSelected = valid;
 
   const getDegree = (isLaying, side1, side2) => {
@@ -11,10 +11,10 @@ const Piece = props => {
     else {
       if (isLaying === true) deg = 90;
       else deg = 180;
-  
+
       if (side1 < side2) deg *= -1;
     }
-  
+
     return deg;
   };
   //the format of piece image name is "p{minNumberSide}_{maxNumberSide}"
@@ -42,7 +42,7 @@ export default Piece;
 export const EmptyPiece = () => <div style={{ ...style.container }} />;
 export const ValidPiece = () => <div style={{ ...style.ValidPiece }} />;
 
-const size = "9vw";
+const size = "5vw";
 const style = {
   image: {
     width: size,
