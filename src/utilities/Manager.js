@@ -6,6 +6,7 @@ class DominoStack {
     //because of the initial state of stack
     this.numberOfDrawnFromStack = -7;
     this.getNumOfWithdrawals = this.getNumOfWithdrawals.bind(this);
+    this.reset = this.reset.bind(this);
   }
 
   getNumOfWithdrawals() {
@@ -47,6 +48,14 @@ class DominoStack {
       }
     }
     return arr;
+  }
+
+  reset() {
+    this.indexesCardsBox = this.createShuffledArray(28);
+    this.indexesCardsBoxIndex = 27;
+    this.cardsArray = this.createCardsArray();
+    //because of the initial state of stack
+    this.numberOfDrawnFromStack = -7;
   }
 }
 

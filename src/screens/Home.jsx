@@ -25,9 +25,30 @@ class Home extends React.Component {
       currentScore: 0,
       turn: 0
     };
+    this.restartGame = this.restartGame.bind(this);
     this.validLocationsArray = this.createEmptyValidLocations();
     this.isDataTimerNeeded = false;
     this.lastPieceStats = null;
+    this.isTimerResetNeeded = false;
+  }
+
+  restartGame() {
+    DominoStackLogic.reset();
+
+    this.validLocationsArray = this.createEmptyValidLocations();
+    this.lastPieceStats = null;
+    this.isTimerResetNeeded = true;
+    this.setState(() => {
+      const initialBoard = this.setInitialBoard(57);
+      const initialCart = this.setInitialCart();
+      return {
+        boardMap: initialBoard,
+        cartMap: initialCart,
+        selectedCard: null,
+        currentScore: 0,
+        turn: 0
+      };
+    });
   }
 
   createEmptyBoard(size) {
@@ -178,9 +199,9 @@ class Home extends React.Component {
     this.removeValidLocation(row, col, card);
     this.updateValidLocationsByNumber(row, col, card);
     this.removePieceFromCart();
-    //this.lastPiece = card;
-    let addition = card.side1 + card.side2;
+    let scoreAddition = card.side1 + card.side2;
     this.isDataTimerNeeded = true;
+    this.isTimerResetNeeded = false;
     this.setState(prevState => {
       const newBoardMap = this.getUpdatedBoard(
         [...prevState.boardMap],
@@ -188,7 +209,10 @@ class Home extends React.Component {
         row,
         col
       );
-      const newScore = this.getUpdatedScore(prevState.currentScore, addition);
+      const newScore = this.getUpdatedScore(
+        prevState.currentScore,
+        scoreAddition
+      );
       const newTurn = prevState.turn + 1;
       return { boardMap: newBoardMap, currentScore: newScore, turn: newTurn };
     });
@@ -351,6 +375,7 @@ class Home extends React.Component {
 
   handleCartClick(indexCart, card) {
     console.log("clicked" + indexCart);
+    this.isTimerResetNeeded = false;
     this.setState(prevState => {
       const boardMap = this.getBoardWithSignsCells(
         [...prevState.boardMap],
@@ -405,7 +430,7 @@ class Home extends React.Component {
 
   render() {
     const Withdrawals = DominoStackLogic.getNumOfWithdrawals();
-    //this.isDataTimerNeeded = false;
+    //const buttonDiv = <button onClick={this.restartGame}>newGame</button>;
     return (
       <div id="homeContainer">
         <div id="StatsFrame">
@@ -413,6 +438,7 @@ class Home extends React.Component {
             id="timer"
             sendCurrentTime={(m, s) => this.saveCurrentTime(m, s)}
             isDataTimerNeeded={this.isDataTimerNeeded}
+            isResetNeeded={this.isTimerResetNeeded}
           />
           <Stats
             id="statistics"
@@ -434,6 +460,7 @@ class Home extends React.Component {
             onClick={(i, value) => this.handleCartClick(i, value)}
           />
         </div>
+        <button onClick={this.restartGame}>newGame</button>
       </div>
     );
   }
