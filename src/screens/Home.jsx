@@ -25,6 +25,9 @@ class Home extends React.Component {
       currentScore: 0,
       turn: 0
     };
+    this.isGameRunning = true;
+    this.isWin = false;
+    this.cartEmptyFlag = false;
     this.restartGame = this.restartGame.bind(this);
     this.validLocationsArray = this.createEmptyValidLocations();
     this.isDataTimerNeeded = false;
@@ -38,6 +41,9 @@ class Home extends React.Component {
     this.validLocationsArray = this.createEmptyValidLocations();
     this.lastPieceStats = null;
     this.isTimerResetNeeded = true;
+    this.isGameRunning = true;
+    this.isWin = false;
+    this.cartEmptyFlag = false;
     this.setState(() => {
       const initialBoard = this.setInitialBoard(57);
       const initialCart = this.setInitialCart();
@@ -75,6 +81,18 @@ class Home extends React.Component {
       cart[i] = DominoStackLogic.getCard();
     }
     return cart;
+  }
+
+  isCartEmpty() {
+    const { cartMap } = this.state;
+    const { index } = this.state.selectedCard;
+    let isEmpty = true;
+    for (let i = 0; i < cartMap.length; i++) {
+      if (i !== index && cartMap[i].side1 !== undefined) {
+        isEmpty = false;
+      }
+    }
+    return isEmpty;
   }
 
   createEmptyValidLocations() {
@@ -185,6 +203,10 @@ class Home extends React.Component {
         cartMap: newCartMap
       };
     });
+    if (this.isCartEmpty()) {
+      this.isGameRunning = false;
+      this.isWin = true;
+    }
   }
 
   getCartMapAfterRemoveCard(index, cartMap) {
@@ -199,6 +221,7 @@ class Home extends React.Component {
     this.removeValidLocation(row, col, card);
     this.updateValidLocationsByNumber(row, col, card);
     this.removePieceFromCart();
+
     let scoreAddition = card.side1 + card.side2;
     this.isDataTimerNeeded = true;
     this.isTimerResetNeeded = false;
@@ -381,11 +404,14 @@ class Home extends React.Component {
         [...prevState.boardMap],
         card
       );
-      const cartMap = this.getUpdatedCart([...prevState.cartMap], indexCart);
+      const obj = this.getUpdatedCart([...prevState.cartMap], indexCart);
+      const cartMap = obj.cartMap;
+      const turn = obj.turn;
       return {
         boardMap: boardMap,
         cartMap: cartMap,
-        selectedCard: { value: card, index: indexCart }
+        selectedCard: { value: card, index: indexCart },
+        turn: turn
       };
     });
   }
@@ -404,6 +430,7 @@ class Home extends React.Component {
       if (cartMap[i].valid) cartMap[i].valid = undefined;
     }
     cartMap[indexCart].valid = true;
+    let turn = this.state.turn;
 
     while (
       !this.isTheFirstTurn() &&
@@ -412,12 +439,13 @@ class Home extends React.Component {
       let domino = DominoStackLogic.getCard();
       if (domino) {
         cartMap.push(domino);
-        this.setState(prevState => {
-          return { turn: prevState.turn + 1 };
-        });
+        turn++;
+      } else {
+        this.isGameRunning = false;
+        this.isWin = false;
       }
     }
-    return cartMap;
+    return { cartMap: cartMap, turn: turn };
   }
 
   saveCurrentTime(m, s) {
@@ -430,7 +458,17 @@ class Home extends React.Component {
 
   render() {
     const Withdrawals = DominoStackLogic.getNumOfWithdrawals();
-    //const buttonDiv = <button onClick={this.restartGame}>newGame</button>;
+    let buttonDiv = null;
+    let gameDoneSentence = null;
+    if (!this.isGameRunning) {
+      buttonDiv = <button onClick={this.restartGame}>newGame</button>;
+      if (this.isWin) {
+        gameDoneSentence = <p>YOU WINNER!!!</p>;
+      } else {
+        gameDoneSentence = <p>YOU LOSER...</p>;
+      }
+    }
+
     return (
       <div id="homeContainer">
         <div id="StatsFrame">
@@ -460,7 +498,8 @@ class Home extends React.Component {
             onClick={(i, value) => this.handleCartClick(i, value)}
           />
         </div>
-        <button onClick={this.restartGame}>newGame</button>
+        {buttonDiv}
+        {gameDoneSentence}
       </div>
     );
   }
