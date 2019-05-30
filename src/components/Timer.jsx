@@ -37,12 +37,13 @@ class Timer extends React.Component {
     }
   }
 
-  countUp() {
-    let seconds = this.state.seconds + 1;
-    this.setState({
-      time: this.secondsToTime(seconds),
-      seconds: seconds
-    });
+  countUp() {    
+    this.setState(prevState=>{
+        return {
+            time: this.secondsToTime(prevState.seconds),
+            seconds: prevState.seconds+1
+          }
+    });   
   }
 
   render() {
