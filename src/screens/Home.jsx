@@ -419,6 +419,7 @@ class Home extends React.Component {
             currentScore={this.state.currentScore}
             turn={this.state.turn}
             withdrawals={Withdrawals}
+            currentTime={this.lastPieceStats}
           />
         </div>
         <div id="boardFrame">
