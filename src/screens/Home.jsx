@@ -1,6 +1,7 @@
 import React from "react";
 import Board from "../components/Board.jsx";
 import Cart from "../components/Cart.jsx";
+import Timer from "../components/Timer.jsx";
 import "../style/HomeStyle.css";
 import { DominoStackLogic } from "../utilities/Manager";
 import Stats from "../components/Stats.jsx";
@@ -397,6 +398,7 @@ class Home extends React.Component {
     return (
       <div id="homeContainer">
         <div id="StatsFrame">
+          <Timer id="timer" />
           <Stats
             id="statistics"
             currentScore={this.state.currentScore}
