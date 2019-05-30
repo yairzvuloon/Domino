@@ -26,7 +26,8 @@ class Home extends React.Component {
       turn: 0
     };
     this.validLocationsArray = this.createEmptyValidLocations();
-    //this.lastPiece = null;
+    this.isDataTimerNeeded = false;
+    this.lastPieceStats = null;
   }
 
   createEmptyBoard(size) {
@@ -179,6 +180,7 @@ class Home extends React.Component {
     this.removePieceFromCart();
     //this.lastPiece = card;
     let addition = card.side1 + card.side2;
+    this.isDataTimerNeeded = true;
     this.setState(prevState => {
       const newBoardMap = this.getUpdatedBoard(
         [...prevState.boardMap],
@@ -393,12 +395,25 @@ class Home extends React.Component {
     return cartMap;
   }
 
+  saveCurrentTime(m, s) {
+    if (this.isDataTimerNeeded) {
+      console.log("minutes: " + m + "secondes: " + s);
+      this.lastPieceStats = { minutes: m, secondes: s };
+      this.isDataTimerNeeded = false;
+    }
+  }
+
   render() {
     const Withdrawals = DominoStackLogic.getNumOfWithdrawals();
+    //this.isDataTimerNeeded = false;
     return (
       <div id="homeContainer">
         <div id="StatsFrame">
-          <Timer id="timer" />
+          <Timer
+            id="timer"
+            sendCurrentTime={(m, s) => this.saveCurrentTime(m, s)}
+            isDataTimerNeeded={this.isDataTimerNeeded}
+          />
           <Stats
             id="statistics"
             currentScore={this.state.currentScore}
