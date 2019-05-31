@@ -31,15 +31,18 @@ class Home extends React.Component {
     this.restartGame = this.restartGame.bind(this);
     this.validLocationsArray = this.createEmptyValidLocations();
     this.isDataTimerNeeded = false;
-    this.lastPieceStats = null;
+    this.lastPieceTime = null;
     this.isTimerResetNeeded = false;
+    this.movesHistory = new Array(0);
+    this.redoMoves = new Array(0);
   }
-
+ 
   restartGame() {
     DominoStackLogic.reset();
-
+    this.movesHistory = new Array(0);
+    this.redoMoves = new Array(0);
     this.validLocationsArray = this.createEmptyValidLocations();
-    this.lastPieceStats = null;
+    this.lastPieceTime = null;
     this.isTimerResetNeeded = true;
     this.isGameRunning = true;
     this.isWin = false;
@@ -339,6 +342,21 @@ class Home extends React.Component {
         let piece = boardMap[neighborLocation.row][neighborLocation.col];
         card = this.createPiece(neighborName[0], piece, side1, side2);
       }
+      const moveObj = {
+        cardInBoard: {
+          indexCart: this.state.selectedCard.index,
+          row: row,
+          col: col,
+          card: card
+        },
+        lastPulledCard: null,
+        stats: {
+          currentScore: this.state.currentScore + side1 + side2,
+          turn: this.state.turn,
+          time: this.lastPieceTime
+        }
+      };
+      this.movesHistory.push(moveObj);
       this.locatePieceOnBoard(row, col, card);
     }
   }
@@ -407,6 +425,7 @@ class Home extends React.Component {
       const obj = this.getUpdatedCart([...prevState.cartMap], indexCart);
       const cartMap = obj.cartMap;
       const turn = obj.turn;
+
       return {
         boardMap: boardMap,
         cartMap: cartMap,
@@ -440,6 +459,16 @@ class Home extends React.Component {
       if (domino) {
         cartMap.push(domino);
         turn++;
+        const moveObj = {
+          cardInBoard: null,
+          lastPulledCard: { card: domino },
+          stats: {
+            currentScore: this.state.currentScore,
+            turn: turn,
+            time: this.lastPieceTime
+          }
+        };
+        this.movesHistory.push(moveObj);
       } else {
         this.isGameRunning = false;
         this.isWin = false;
@@ -451,17 +480,22 @@ class Home extends React.Component {
   saveCurrentTime(m, s) {
     if (this.isDataTimerNeeded) {
       console.log("minutes: " + m + "secondes: " + s);
-      this.lastPieceStats = { minutes: m, secondes: s };
+      this.lastPieceTime = { minutes: m, secondes: s };
       this.isDataTimerNeeded = false;
     }
   }
 
   render() {
     const Withdrawals = DominoStackLogic.getNumOfWithdrawals();
-    let buttonDiv = null;
+    let newGameButton,
+      prevButton,
+      nextButton = null;
     let gameDoneSentence = null;
     if (!this.isGameRunning) {
-      buttonDiv = <button onClick={this.restartGame}>newGame</button>;
+      newGameButton = <button onClick={this.restartGame}>newGame</button>;
+      prevButton = <button> Prev</button>;
+      nextButton = <button> Next</button>;
+
       if (this.isWin) {
         gameDoneSentence = <p>YOU WINNER!!!</p>;
       } else {
@@ -498,7 +532,9 @@ class Home extends React.Component {
             onClick={(i, value) => this.handleCartClick(i, value)}
           />
         </div>
-        {buttonDiv}
+        {newGameButton}
+        {prevButton}
+        {nextButton}
         {gameDoneSentence}
       </div>
     );
