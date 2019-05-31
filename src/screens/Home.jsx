@@ -34,7 +34,8 @@ class Home extends React.Component {
 
     this.validLocationsArray = this.createEmptyValidLocations();
     this.isDataTimerNeeded = false;
-    this.lastPieceTime = { minutes: 0, secondes: 0 };
+    this.currentTime = { minutes: 0, seconds: 0 };
+    this.lastPieceTime = { minutes: 0, seconds: 0 };
     this.isTimerResetNeeded = false;
     this.movesHistory = new Array(0);
     this.redoMoves = new Array(0);
@@ -45,7 +46,9 @@ class Home extends React.Component {
     this.movesHistory = new Array(0);
     this.redoMoves = new Array(0);
     this.validLocationsArray = this.createEmptyValidLocations();
-    this.lastPieceTime = { minutes: 0, secondes: 0 };
+    this.currentTime = { minutes: 0, seconds: 0 };
+    this.lastPieceTime = { minutes: 0, seconds: 0 };
+    this.isPiecePlaceOnBoard = false;
     this.isTimerResetNeeded = true;
     this.isGameRunning = true;
     this.isWin = false;
@@ -231,6 +234,8 @@ class Home extends React.Component {
     let scoreAddition = card.side1 + card.side2;
     this.isDataTimerNeeded = true;
     this.isTimerResetNeeded = false;
+    this.lastPieceTime = this.currentTime;
+    this.isPiecePlaceOnBoard = true;
     this.setState(prevState => {
       const newBoardMap = this.getUpdatedBoard(
         [...prevState.boardMap],
@@ -441,7 +446,7 @@ class Home extends React.Component {
         stats: {
           currentScore: this.state.currentScore + side1 + side2,
           turn: this.state.turn,
-          time: this.lastPieceTime
+          time: this.currentTime
         }
       };
       this.movesHistory.push(moveObj);
@@ -540,7 +545,7 @@ class Home extends React.Component {
     }
     cartMap[indexCart].valid = true;
     let turn = this.state.turn;
-
+    this.isPiecePlaceOnBoard = false;
     while (
       !this.isTheFirstTurn() &&
       !this.isExistPieceForValidSquares(cartMap)
@@ -555,7 +560,7 @@ class Home extends React.Component {
           stats: {
             currentScore: this.state.currentScore,
             turn: turn,
-            time: this.lastPieceTime
+            time: this.currentTime
           }
         };
         this.movesHistory.push(moveObj);
@@ -568,11 +573,8 @@ class Home extends React.Component {
   }
 
   saveCurrentTime(m, s) {
-    if (this.isDataTimerNeeded) {
-      console.log("minutes: " + m + "secondes: " + s);
-      this.lastPieceTime = { minutes: m, secondes: s };
-      this.isDataTimerNeeded = false;
-    }
+    console.log("minutes: " + m + "seconds: " + s);
+    this.currentTime = { minutes: m, seconds: s };
   }
 
   render() {
@@ -607,7 +609,9 @@ class Home extends React.Component {
             currentScore={this.state.currentScore}
             turn={this.state.turn}
             withdrawals={Withdrawals}
-            currentTime={this.lastPieceTime}
+            currentTime={this.currentTime}
+            lastPieceTime={this.lastPieceTime}
+            isPiecePlaceOnBoard={this.isPiecePlaceOnBoard}
           />
         </div>
         <div id="boardFrame">
