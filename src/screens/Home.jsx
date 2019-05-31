@@ -29,9 +29,10 @@ class Home extends React.Component {
     this.isWin = false;
     this.cartEmptyFlag = false;
     this.restartGame = this.restartGame.bind(this);
+    this.handlePrevButton = this.handlePrevButton.bind(this);
     this.validLocationsArray = this.createEmptyValidLocations();
     this.isDataTimerNeeded = false;
-    this.lastPieceTime = { minutes: 0, secondes: 0};
+    this.lastPieceTime = { minutes: 0, secondes: 0 };
     this.isTimerResetNeeded = false;
     this.movesHistory = new Array(0);
     this.redoMoves = new Array(0);
@@ -244,6 +245,55 @@ class Home extends React.Component {
     });
   }
 
+  getBoardAfterRemovePiece(board, row, col) {
+    board[row][col] = new Card(false);
+    return board;
+  }
+  getCartAfterAddPiece(cart, card, indexCart) {
+    card.valid = undefined;
+    cart[indexCart] = card;
+    return cart;
+  }
+  getCartAfterRemovePiece(cart, indexCart) {
+    cart[indexCart] = new Card(false);
+    return cart;
+  }
+
+  handlePrevButton() {
+    const prevMoveObj = this.movesHistory.pop();
+    if (prevMoveObj) {
+      const { cardInBoard, lastPulledCard, stats } = prevMoveObj;
+      this.redoMoves.push(prevMoveObj);
+
+      this.setState(prevState => {
+        let newCartMap,
+          newBoardMap,
+          obj = null;
+
+        if (cardInBoard) {
+          newBoardMap = this.getBoardAfterRemovePiece(
+            [...prevState.boardMap],
+            cardInBoard.row,
+            cardInBoard.col
+          );
+          newCartMap = this.getCartAfterAddPiece(
+            [...prevState.cartMap],
+            cardInBoard.card,
+            cardInBoard.indexCart
+          );
+          obj = { boardMap: newBoardMap, cartMap: newCartMap };
+        } else if (lastPulledCard) {
+          newCartMap = this.getCartAfterRemovePiece(
+            [...prevState.cartMap],
+            lastPulledCard.indexInCart
+          );
+          obj = { cartMap: newCartMap };
+        }
+        return obj;
+      });
+    }
+  }
+
   getUpdatedScore(score, addition) {
     score += addition;
     return score;
@@ -415,24 +465,26 @@ class Home extends React.Component {
   }
 
   handleCartClick(indexCart, card) {
-    console.log("clicked" + indexCart);
-    this.isTimerResetNeeded = false;
-    this.setState(prevState => {
-      const boardMap = this.getBoardWithSignsCells(
-        [...prevState.boardMap],
-        card
-      );
-      const obj = this.getUpdatedCart([...prevState.cartMap], indexCart);
-      const cartMap = obj.cartMap;
-      const turn = obj.turn;
+    if (this.isGameRunning) {
+      console.log("clicked" + indexCart);
+      this.isTimerResetNeeded = false;
+      this.setState(prevState => {
+        const boardMap = this.getBoardWithSignsCells(
+          [...prevState.boardMap],
+          card
+        );
+        const obj = this.getUpdatedCart([...prevState.cartMap], indexCart);
+        const cartMap = obj.cartMap;
+        const turn = obj.turn;
 
-      return {
-        boardMap: boardMap,
-        cartMap: cartMap,
-        selectedCard: { value: card, index: indexCart },
-        turn: turn
-      };
-    });
+        return {
+          boardMap: boardMap,
+          cartMap: cartMap,
+          selectedCard: { value: card, index: indexCart },
+          turn: turn
+        };
+      });
+    }
   }
 
   getBoardWithSignsCells(board, card) {
@@ -461,7 +513,7 @@ class Home extends React.Component {
         turn++;
         const moveObj = {
           cardInBoard: null,
-          lastPulledCard: { card: domino },
+          lastPulledCard: { card: domino, indexInCart: cartMap.length - 1 },
           stats: {
             currentScore: this.state.currentScore,
             turn: turn,
@@ -493,7 +545,7 @@ class Home extends React.Component {
     let gameDoneSentence = null;
     if (!this.isGameRunning) {
       newGameButton = <button onClick={this.restartGame}>newGame</button>;
-      prevButton = <button> Prev</button>;
+      prevButton = <button onClick={this.handlePrevButton}> Prev</button>;
       nextButton = <button> Next</button>;
 
       if (this.isWin) {
