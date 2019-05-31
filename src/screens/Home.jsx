@@ -30,6 +30,8 @@ class Home extends React.Component {
     this.cartEmptyFlag = false;
     this.restartGame = this.restartGame.bind(this);
     this.handlePrevButton = this.handlePrevButton.bind(this);
+    this.handleNextButton = this.handleNextButton.bind(this);
+
     this.validLocationsArray = this.createEmptyValidLocations();
     this.isDataTimerNeeded = false;
     this.lastPieceTime = { minutes: 0, secondes: 0 };
@@ -294,6 +296,42 @@ class Home extends React.Component {
     }
   }
 
+  handleNextButton() {
+    const nextMoveObj = this.redoMoves.pop();
+    if (nextMoveObj) {
+      const { cardInBoard, lastPulledCard, stats } = nextMoveObj;
+      this.movesHistory.push(nextMoveObj);
+
+      this.setState(prevState => {
+        let newCartMap,
+          newBoardMap,
+          obj = null;
+
+        if (cardInBoard) {
+          newBoardMap = this.getUpdatedBoard(
+            [...prevState.boardMap],
+            cardInBoard.card,
+            cardInBoard.row,
+            cardInBoard.col
+          );
+          newCartMap = this.getCartAfterRemovePiece(
+            [...prevState.cartMap],
+            cardInBoard.indexCart
+          );
+          obj = { boardMap: newBoardMap, cartMap: newCartMap };
+        } else if (lastPulledCard) {
+          newCartMap = this.getCartAfterAddPiece(
+            [...prevState.cartMap],
+            lastPulledCard.card,
+            lastPulledCard.indexInCart
+          );
+          obj = { cartMap: newCartMap };
+        }
+        return obj;
+      });
+    }
+  }
+
   getUpdatedScore(score, addition) {
     score += addition;
     return score;
@@ -546,7 +584,7 @@ class Home extends React.Component {
     if (!this.isGameRunning) {
       newGameButton = <button onClick={this.restartGame}>newGame</button>;
       prevButton = <button onClick={this.handlePrevButton}> Prev</button>;
-      nextButton = <button> Next</button>;
+      nextButton = <button onClick={this.handleNextButton}> Next</button>;
 
       if (this.isWin) {
         gameDoneSentence = <p>YOU WINNER!!!</p>;
