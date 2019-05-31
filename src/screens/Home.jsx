@@ -31,18 +31,18 @@ class Home extends React.Component {
     this.restartGame = this.restartGame.bind(this);
     this.validLocationsArray = this.createEmptyValidLocations();
     this.isDataTimerNeeded = false;
-    this.lastPieceTime = null;
+    this.lastPieceTime = { minutes: 0, secondes: 0};
     this.isTimerResetNeeded = false;
     this.movesHistory = new Array(0);
     this.redoMoves = new Array(0);
   }
- 
+
   restartGame() {
     DominoStackLogic.reset();
     this.movesHistory = new Array(0);
     this.redoMoves = new Array(0);
     this.validLocationsArray = this.createEmptyValidLocations();
-    this.lastPieceTime = null;
+    this.lastPieceTime = { minutes: 0, secondes: 0 };
     this.isTimerResetNeeded = true;
     this.isGameRunning = true;
     this.isWin = false;
@@ -517,7 +517,7 @@ class Home extends React.Component {
             currentScore={this.state.currentScore}
             turn={this.state.turn}
             withdrawals={Withdrawals}
-            currentTime={this.lastPieceStats}
+            currentTime={this.lastPieceTime}
           />
         </div>
         <div id="boardFrame">
