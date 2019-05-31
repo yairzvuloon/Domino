@@ -25,9 +25,39 @@ class Home extends React.Component {
       currentScore: 0,
       turn: 0
     };
+    this.isGameRunning = true;
+    this.isWin = false;
+    this.cartEmptyFlag = false;
+    this.restartGame = this.restartGame.bind(this);
     this.validLocationsArray = this.createEmptyValidLocations();
     this.isDataTimerNeeded = false;
-    this.lastPieceStats = null;
+    this.lastPieceTime = null;
+    this.isTimerResetNeeded = false;
+    this.movesHistory = new Array(0);
+    this.redoMoves = new Array(0);
+  }
+ 
+  restartGame() {
+    DominoStackLogic.reset();
+    this.movesHistory = new Array(0);
+    this.redoMoves = new Array(0);
+    this.validLocationsArray = this.createEmptyValidLocations();
+    this.lastPieceTime = null;
+    this.isTimerResetNeeded = true;
+    this.isGameRunning = true;
+    this.isWin = false;
+    this.cartEmptyFlag = false;
+    this.setState(() => {
+      const initialBoard = this.setInitialBoard(57);
+      const initialCart = this.setInitialCart();
+      return {
+        boardMap: initialBoard,
+        cartMap: initialCart,
+        selectedCard: null,
+        currentScore: 0,
+        turn: 0
+      };
+    });
   }
 
   createEmptyBoard(size) {
@@ -54,6 +84,18 @@ class Home extends React.Component {
       cart[i] = DominoStackLogic.getCard();
     }
     return cart;
+  }
+
+  isCartEmpty() {
+    const { cartMap } = this.state;
+    const { index } = this.state.selectedCard;
+    let isEmpty = true;
+    for (let i = 0; i < cartMap.length; i++) {
+      if (i !== index && cartMap[i].side1 !== undefined) {
+        isEmpty = false;
+      }
+    }
+    return isEmpty;
   }
 
   createEmptyValidLocations() {
@@ -164,6 +206,10 @@ class Home extends React.Component {
         cartMap: newCartMap
       };
     });
+    if (this.isCartEmpty()) {
+      this.isGameRunning = false;
+      this.isWin = true;
+    }
   }
 
   getCartMapAfterRemoveCard(index, cartMap) {
@@ -178,9 +224,10 @@ class Home extends React.Component {
     this.removeValidLocation(row, col, card);
     this.updateValidLocationsByNumber(row, col, card);
     this.removePieceFromCart();
-    //this.lastPiece = card;
-    let addition = card.side1 + card.side2;
+
+    let scoreAddition = card.side1 + card.side2;
     this.isDataTimerNeeded = true;
+    this.isTimerResetNeeded = false;
     this.setState(prevState => {
       const newBoardMap = this.getUpdatedBoard(
         [...prevState.boardMap],
@@ -188,7 +235,10 @@ class Home extends React.Component {
         row,
         col
       );
-      const newScore = this.getUpdatedScore(prevState.currentScore, addition);
+      const newScore = this.getUpdatedScore(
+        prevState.currentScore,
+        scoreAddition
+      );
       const newTurn = prevState.turn + 1;
       return { boardMap: newBoardMap, currentScore: newScore, turn: newTurn };
     });
@@ -292,6 +342,21 @@ class Home extends React.Component {
         let piece = boardMap[neighborLocation.row][neighborLocation.col];
         card = this.createPiece(neighborName[0], piece, side1, side2);
       }
+      const moveObj = {
+        cardInBoard: {
+          indexCart: this.state.selectedCard.index,
+          row: row,
+          col: col,
+          card: card
+        },
+        lastPulledCard: null,
+        stats: {
+          currentScore: this.state.currentScore + side1 + side2,
+          turn: this.state.turn,
+          time: this.lastPieceTime
+        }
+      };
+      this.movesHistory.push(moveObj);
       this.locatePieceOnBoard(row, col, card);
     }
   }
@@ -351,16 +416,21 @@ class Home extends React.Component {
 
   handleCartClick(indexCart, card) {
     console.log("clicked" + indexCart);
+    this.isTimerResetNeeded = false;
     this.setState(prevState => {
       const boardMap = this.getBoardWithSignsCells(
         [...prevState.boardMap],
         card
       );
-      const cartMap = this.getUpdatedCart([...prevState.cartMap], indexCart);
+      const obj = this.getUpdatedCart([...prevState.cartMap], indexCart);
+      const cartMap = obj.cartMap;
+      const turn = obj.turn;
+
       return {
         boardMap: boardMap,
         cartMap: cartMap,
-        selectedCard: { value: card, index: indexCart }
+        selectedCard: { value: card, index: indexCart },
+        turn: turn
       };
     });
   }
@@ -379,6 +449,7 @@ class Home extends React.Component {
       if (cartMap[i].valid) cartMap[i].valid = undefined;
     }
     cartMap[indexCart].valid = true;
+    let turn = this.state.turn;
 
     while (
       !this.isTheFirstTurn() &&
@@ -387,25 +458,51 @@ class Home extends React.Component {
       let domino = DominoStackLogic.getCard();
       if (domino) {
         cartMap.push(domino);
-        this.setState(prevState => {
-          return { turn: prevState.turn + 1 };
-        });
+        turn++;
+        const moveObj = {
+          cardInBoard: null,
+          lastPulledCard: { card: domino },
+          stats: {
+            currentScore: this.state.currentScore,
+            turn: turn,
+            time: this.lastPieceTime
+          }
+        };
+        this.movesHistory.push(moveObj);
+      } else {
+        this.isGameRunning = false;
+        this.isWin = false;
       }
     }
-    return cartMap;
+    return { cartMap: cartMap, turn: turn };
   }
 
   saveCurrentTime(m, s) {
     if (this.isDataTimerNeeded) {
       console.log("minutes: " + m + "secondes: " + s);
-      this.lastPieceStats = { minutes: m, secondes: s };
+      this.lastPieceTime = { minutes: m, secondes: s };
       this.isDataTimerNeeded = false;
     }
   }
 
   render() {
     const Withdrawals = DominoStackLogic.getNumOfWithdrawals();
-    //this.isDataTimerNeeded = false;
+    let newGameButton,
+      prevButton,
+      nextButton = null;
+    let gameDoneSentence = null;
+    if (!this.isGameRunning) {
+      newGameButton = <button onClick={this.restartGame}>newGame</button>;
+      prevButton = <button> Prev</button>;
+      nextButton = <button> Next</button>;
+
+      if (this.isWin) {
+        gameDoneSentence = <p>YOU WINNER!!!</p>;
+      } else {
+        gameDoneSentence = <p>YOU LOSER...</p>;
+      }
+    }
+
     return (
       <div id="homeContainer">
         <div id="StatsFrame">
@@ -413,6 +510,7 @@ class Home extends React.Component {
             id="timer"
             sendCurrentTime={(m, s) => this.saveCurrentTime(m, s)}
             isDataTimerNeeded={this.isDataTimerNeeded}
+            isResetNeeded={this.isTimerResetNeeded}
           />
           <Stats
             id="statistics"
@@ -435,6 +533,10 @@ class Home extends React.Component {
             onClick={(i, value) => this.handleCartClick(i, value)}
           />
         </div>
+        {newGameButton}
+        {prevButton}
+        {nextButton}
+        {gameDoneSentence}
       </div>
     );
   }

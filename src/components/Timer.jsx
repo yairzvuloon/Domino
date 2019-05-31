@@ -5,6 +5,7 @@ class Timer extends React.Component {
     this.state = { time: {}, seconds: 0 };
     this.timer = 0;
     this.startTimer = this.startTimer.bind(this);
+    this.resetTimer = this.resetTimer.bind(this);
     this.countUp = this.countUp.bind(this);
     this.startTimer();
     this.transferDataToHome = props.sendCurrentTime;
@@ -26,15 +27,16 @@ class Timer extends React.Component {
     };
     return obj;
   }
-  
 
   stopInterval() {
     clearInterval(this.timer);
+    this.timer = 0;
   }
 
   resetTimer() {
     this.stopInterval();
     this.startTimer();
+    this.setState(() => ({ time: {}, seconds: 0 }));
   }
 
   startTimer() {
@@ -52,8 +54,19 @@ class Timer extends React.Component {
     });
   }
 
+  componentDidUpdate(prevProps) {
+    console.log("im in componentDidUpdate");
+    if (
+      prevProps.isResetNeeded !== this.props.isResetNeeded &&
+      this.props.isResetNeeded
+    ) {
+      this.resetTimer();
+    }
+  }
+
   render() {
     this.transferDataToHome(this.state.time.m, this.state.time.s);
+
     return (
       <div>
         minutes: {this.state.time.m} secondes: {this.state.time.s}
