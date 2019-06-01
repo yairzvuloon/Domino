@@ -24,7 +24,7 @@ const BoardRow = props => {
       else
         ret = (
           <td key={j} onClick={() => props.onClick(indexRow, j)}>
-            <ValidPiece isRefNeeded={false} />
+            <ValidPiece/>
           </td>
         );
     return ret;
