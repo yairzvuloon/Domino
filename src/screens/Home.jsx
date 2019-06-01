@@ -576,7 +576,7 @@ class Home extends React.Component {
     console.log("minutes: " + m + "seconds: " + s);
     this.currentTime = { minutes: m, seconds: s };
   }
-
+  
   render() {
     const Withdrawals = DominoStackLogic.getNumOfWithdrawals();
     let newGameButton,

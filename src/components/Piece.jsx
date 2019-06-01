@@ -40,6 +40,7 @@ const Piece = props => {
 export default Piece;
 
 export const EmptyPiece = () => <div style={{ ...style.container }} />;
+
 export const ValidPiece = () => <div style={{ ...style.ValidPiece }} />;
 
 const size = "5vw";

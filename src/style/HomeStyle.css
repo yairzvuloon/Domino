@@ -10,17 +10,15 @@
   margin: auto;
 }
 #boardFrame {
-  max-width: 800px;
-  width: 800px;
-  max-height: 400px;
-  height: 400px;
+  width:50vw;
+  height:25vw;
   overflow: scroll;
   /*margin-left: 100%;
 margin-right: 100%;*/
 }
 #cartFrame{
-  max-width: 800px;
-  width: 800px;
+  max-width: 50vw;
+  width:50vw;
   overflow: scroll;
 }
 #cartStyle {
@@ -28,9 +26,7 @@ margin-right: 100%;*/
   width: 10vw;
   max-height: 3vw;
 }
-#StatsFrame{
- 
-}
+
 #statistics{
   max-width: 10vw;
   width: 10vw;
