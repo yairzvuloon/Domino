@@ -20,21 +20,13 @@ const BoardRow = props => {
         <td key={j}>
           <EmptyPiece />
         </td>
-      );
-    else {
-      if (indexRow === 28 && j === 28)
-        ret = (
-          <td key={j} onClick={() => props.onClick(indexRow, j)}>
-            <ValidPiece isRefNeeded={true} />
-          </td>
-        );
+      ); 
       else
         ret = (
           <td key={j} onClick={() => props.onClick(indexRow, j)}>
             <ValidPiece isRefNeeded={false} />
           </td>
         );
-    }
     return ret;
   });
 };
