@@ -3,26 +3,22 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  position: absolute;
   top: 0;
   left: 0;
   right: 0;
   margin: auto;
 }
 #boardFrame {
-  /*max-width: 800px;*/
-  width: 99vw;
-  /*max-height: 400px;*/
-  height: 80vh;
+  width:100vw;
+  height:25vw;
   overflow: scroll;
   /*margin-left: 100%;
 margin-right: 100%;*/
 }
 #cartFrame{
-  width: 99vw;
+  max-width: 50vw;
+  width:50vw;
   overflow: scroll;
-  height: 15vh;
-
 }
 #cartStyle {
   max-width: 10vw;
@@ -34,7 +30,4 @@ margin-right: 100%;*/
   max-width: 10vw;
   width: 10vw;
   max-height: 3vw;
-}
-#statsFrame{
-  height: 5vh
 }
