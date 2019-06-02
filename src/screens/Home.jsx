@@ -36,6 +36,8 @@ class Home extends React.Component {
     this.handleNextButton = this.handleNextButton.bind(this);
     this.convertTimeToSecs = this.convertTimeToSecs.bind(this);
     this.statsObj = this.statsObj.bind(this);
+    this.cleanAllFlags = this.cleanAllFlags.bind(this);
+
     this.isGameRunning = true;
     this.isWin = false;
     this.cartEmptyFlag = false;
@@ -48,11 +50,11 @@ class Home extends React.Component {
     this.redoMoves = new Array(0);
   }
 
-  restartGame() {
-    DominoStackLogic.reset();
+  cleanAllFlags() {
     this.movesHistory = new Array(0);
     this.redoMoves = new Array(0);
     this.validLocationsArray = this.createEmptyValidLocations();
+    this.isDataTimerNeeded = false;
     this.currentTime = { minutes: 0, seconds: 0 };
     this.lastPieceTime = { minutes: 0, seconds: 0 };
     this.isPiecePlaceOnBoard = false;
@@ -60,7 +62,12 @@ class Home extends React.Component {
     this.isGameRunning = true;
     this.isWin = false;
     this.cartEmptyFlag = false;
+  }
+
+  restartGame() {
+    DominoStackLogic.reset();
     this.setState(() => getInitialState());
+    this.cleanAllFlags();
   }
 
   isCartEmpty() {
