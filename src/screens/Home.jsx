@@ -307,13 +307,6 @@ class Home extends React.Component {
             cardInBoard.card,
             cardInBoard.indexCart
           );
-          // stats: {
-          //   currentScore: this.state.currentScore + side1 + side2,
-          //   turn: this.state.turn,
-          //   time: this.currentTime,
-          //   withdrawals: this.state.withdrawals,
-          //   averageTurn: this.average
-          // }
 
           // statsObj(withdrawals, turns, scoreToAdd) {
           //   this.withdrawals = withdrawals;
@@ -324,6 +317,7 @@ class Home extends React.Component {
           //     this.convertTimeToSecs(this.turnLength + this.currentTime) /
           //     (this.state.turn + turns);
           // }
+          let averageSecsFormat = this.convertTimeToSecs(this.state.average);
           this.currentTime = {
             minutes:
               this.currentTime.minutes - prevMoveObj.stats.turnLength.minutes,
@@ -338,7 +332,7 @@ class Home extends React.Component {
             withdrawals: prevState.withdrawals - prevMoveObj.stats.withdrawals,
             currentScore: prevState.currentScore - prevMoveObj.stats.scoreToAdd,
             average: this.secondsToTime(
-              prevMoveObj.stats.averageTurnInSecsToAdd + this.state.average
+              averageSecsFormat - prevMoveObj.stats.averageTurnInSecsToAdd
             ),
             timeToDisplay: this.currentTime
           };
@@ -353,7 +347,7 @@ class Home extends React.Component {
             withdrawals: prevState.withdrawals - prevMoveObj.stats.withdrawals,
             currentScore: prevState.currentScore - prevMoveObj.stats.scoreToAdd,
             average: this.secondsToTime(
-              prevMoveObj.stats.averageTurnInSecsToAdd + this.state.average
+              averageSecsFormat - prevMoveObj.stats.averageTurnInSecsToAdd
             ),
             timeToDisplay: this.currentTime
           };
@@ -487,12 +481,15 @@ class Home extends React.Component {
         minutes: this.currentTime.minutes - this.lastPieceTime.minutes,
         seconds: this.currentTime.seconds - this.lastPieceTime.seconds
       };
-      let currAverage =
-        this.convertTimeToSecs({
-          minutes: turnLength.minutes + this.currentTime.minutes,
-          seconds: turnLength.seconds + this.currentTime.seconds
-        }) /
-        (this.state.turn + 1);
+      let currAverage = this.convertTimeToSecs(
+        this.secondsToTime(
+          this.convertTimeToSecs({
+            minutes: turnLength.minutes + this.lastPieceTime.minutes,
+            seconds: turnLength.seconds + this.lastPieceTime.seconds
+          }) /
+            (this.state.turn + 1)
+        )
+      );
       let prevAverage = this.convertTimeToSecs(this.state.average);
       let averageTurnInSecsToAdd = currAverage - prevAverage;
 
@@ -658,15 +655,6 @@ class Home extends React.Component {
           seconds: this.currentTime.seconds - this.lastPieceTime.seconds
         };
 
-        let currAverage =
-          this.convertTimeToSecs({
-            minutes: turnLength.minutes + this.currentTime.minutes,
-            seconds: turnLength.seconds + this.currentTime.seconds
-          }) /
-          (this.state.turn + 1);
-        let prevAverage = this.convertTimeToSecs(this.state.average);
-        let averageTurnInSecsToAdd = currAverage - prevAverage;
-
         const moveObj = {
           cardInBoard: null,
           lastPulledCard: { card: domino, indexInCart: cartMap.length - 1 },
@@ -675,7 +663,7 @@ class Home extends React.Component {
             numOfTurnsToAdd,
             0,
             turnLength,
-            averageTurnInSecsToAdd
+            0
           )
           // stats: {
           //   currentScore: 0,
@@ -703,7 +691,7 @@ class Home extends React.Component {
   }
 
   secondsToTime(secs) {
-    let hours = Math.floor(secs / (60 * 60));
+    //let hours = Math.floor(secs / (60 * 60));
 
     let divisor_for_minutes = secs % (60 * 60);
     let minutes = Math.floor(divisor_for_minutes / 60);
@@ -712,7 +700,7 @@ class Home extends React.Component {
     let seconds = Math.ceil(divisor_for_seconds);
 
     let obj = {
-      hours: hours,
+      //hours: hours,
       minutes: minutes,
       seconds: seconds
     };

@@ -14,7 +14,7 @@ class Timer extends React.Component {
   }
 
   secondsToTime(secs) {
-    let hours = Math.floor(secs / (60 * 60));
+    //let hours = Math.floor(secs / (60 * 60));
 
     let divisor_for_minutes = secs % (60 * 60);
     let minutes = Math.floor(divisor_for_minutes / 60);
@@ -23,7 +23,7 @@ class Timer extends React.Component {
     let seconds = Math.ceil(divisor_for_seconds);
 
     let obj = {
-      h: hours,
+      //h: hours,
       m: minutes,
       s: seconds
     };
@@ -76,7 +76,7 @@ class Timer extends React.Component {
       this.stopInterval();
       if (this.props.timeToDisplay !== prevProps.timeToDisplay) {
         this.displaySpecificTime({
-          h: 0,
+         // h: 0,
           m: this.props.timeToDisplay.minutes,
           s: this.props.timeToDisplay.seconds
         });
