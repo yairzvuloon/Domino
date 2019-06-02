@@ -21,12 +21,12 @@ class Timer extends React.Component {
   resetTimer() {
     this.stopInterval();
     this.timer = 0;
-    this.startTimer({ m: 0, s: 0 });
+    this.startTimer({ minutes: 0, seconds: 0 });
     this.setState(() => ({ time: {}, seconds: 0 }));
   }
 
   startTimer(initialTime) {
-    this.timer = initialTime.m * 60 + initialTime.s;
+    this.timer = initialTime.minutes * 60 + initialTime.seconds;
     this.timer = setInterval(this.countUp, 1000);
   }
 
@@ -60,18 +60,18 @@ class Timer extends React.Component {
       if (this.props.timeToDisplay !== prevProps.timeToDisplay) {
         this.displaySpecificTime({
           // h: 0,
-          m: this.props.timeToDisplay.minutes,
-          s: this.props.timeToDisplay.seconds
+          minutes: this.props.timeToDisplay.minutes,
+          seconds: this.props.timeToDisplay.seconds
         });
       }
     }
   }
   render() {
-    this.transferDataToHome(this.state.time.m, this.state.time.s);
+    this.transferDataToHome(this.state.time.minutes, this.state.time.seconds);
 
     return (
       <div>
-        minutes: {this.state.time.m} secondes: {this.state.time.s}
+        minutes: {this.state.time.minutes} secondes: {this.state.time.seconds}
       </div>
     );
   }
