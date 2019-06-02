@@ -23,15 +23,24 @@ class Home extends React.Component {
       cartMap: initialCart,
       selectedCard: null,
       currentScore: 0,
-      turn: 0
+      turn: 0,
+      withdrawals: 0,
+      average: { minutes: 0, seconds: 0 },
+      timeToDisplay: null
     };
     this.isGameRunning = true;
     this.isWin = false;
     this.cartEmptyFlag = false;
     this.restartGame = this.restartGame.bind(this);
+    this.handlePrevButton = this.handlePrevButton.bind(this);
+    this.handleNextButton = this.handleNextButton.bind(this);
+    this.convertTimeToSecs = this.convertTimeToSecs.bind(this);
+    this.statsObj = this.statsObj.bind(this);
+
     this.validLocationsArray = this.createEmptyValidLocations();
     this.isDataTimerNeeded = false;
-    this.lastPieceTime = { minutes: 0, secondes: 0};
+    this.currentTime = { minutes: 0, seconds: 0 };
+    this.lastPieceTime = { minutes: 0, seconds: 0 };
     this.isTimerResetNeeded = false;
     this.movesHistory = new Array(0);
     this.redoMoves = new Array(0);
@@ -42,7 +51,9 @@ class Home extends React.Component {
     this.movesHistory = new Array(0);
     this.redoMoves = new Array(0);
     this.validLocationsArray = this.createEmptyValidLocations();
-    this.lastPieceTime = { minutes: 0, secondes: 0 };
+    this.currentTime = { minutes: 0, seconds: 0 };
+    this.lastPieceTime = { minutes: 0, seconds: 0 };
+    this.isPiecePlaceOnBoard = false;
     this.isTimerResetNeeded = true;
     this.isGameRunning = true;
     this.isWin = false;
@@ -55,7 +66,10 @@ class Home extends React.Component {
         cartMap: initialCart,
         selectedCard: null,
         currentScore: 0,
-        turn: 0
+        turn: 0,
+        withdrawals: 0,
+        average: { minutes: 0, seconds: 0 },
+        timeToDisplay: null
       };
     });
   }
@@ -202,19 +216,25 @@ class Home extends React.Component {
         index,
         prevState.cartMap
       );
+      if (this.isCartEmpty()) {
+        this.isGameRunning = false;
+        this.isWin = true;
+      }
       return {
         cartMap: newCartMap
       };
     });
-    if (this.isCartEmpty()) {
-      this.isGameRunning = false;
-      this.isWin = true;
-    }
   }
 
   getCartMapAfterRemoveCard(index, cartMap) {
     cartMap[index] = new Card(false);
     return cartMap;
+  }
+  calculateAverageOfTurn() {
+    this.lastPieceTime = this.currentTime;
+    let seconds = this.lastPieceTime.minutes * 60 + this.lastPieceTime.seconds;
+    let averageInSecondsFormat = seconds / (this.state.turn + 1);
+    return this.secondsToTime(averageInSecondsFormat);
   }
 
   locatePieceOnBoard(row, col, card) {
@@ -228,6 +248,9 @@ class Home extends React.Component {
     let scoreAddition = card.side1 + card.side2;
     this.isDataTimerNeeded = true;
     this.isTimerResetNeeded = false;
+    const average = this.calculateAverageOfTurn();
+
+    this.isPiecePlaceOnBoard = true;
     this.setState(prevState => {
       const newBoardMap = this.getUpdatedBoard(
         [...prevState.boardMap],
@@ -240,8 +263,140 @@ class Home extends React.Component {
         scoreAddition
       );
       const newTurn = prevState.turn + 1;
-      return { boardMap: newBoardMap, currentScore: newScore, turn: newTurn };
+      return {
+        boardMap: newBoardMap,
+        currentScore: newScore,
+        turn: newTurn,
+        average: average
+      };
     });
+  }
+
+  getBoardAfterRemovePiece(board, row, col) {
+    board[row][col] = new Card(false);
+    return board;
+  }
+  getCartAfterAddPiece(cart, card, indexCart) {
+    card.valid = undefined;
+    cart[indexCart] = card;
+    return cart;
+  }
+  getCartAfterRemovePiece(cart, indexCart) {
+    cart[indexCart] = new Card(false);
+    return cart;
+  }
+
+  handlePrevButton() {
+    const prevMoveObj = this.movesHistory.pop();
+    if (prevMoveObj) {
+      const { cardInBoard, lastPulledCard, stats } = prevMoveObj;
+      this.redoMoves.push(prevMoveObj);
+
+      this.setState(prevState => {
+        let newCartMap,
+          newBoardMap,
+          obj = null;
+        if (cardInBoard) {
+          newBoardMap = this.getBoardAfterRemovePiece(
+            [...prevState.boardMap],
+            cardInBoard.row,
+            cardInBoard.col
+          );
+          newCartMap = this.getCartAfterAddPiece(
+            [...prevState.cartMap],
+            cardInBoard.card,
+            cardInBoard.indexCart
+          );
+          // stats: {
+          //   currentScore: this.state.currentScore + side1 + side2,
+          //   turn: this.state.turn,
+          //   time: this.currentTime,
+          //   withdrawals: this.state.withdrawals,
+          //   averageTurn: this.average
+          // }
+
+          // statsObj(withdrawals, turns, scoreToAdd) {
+          //   this.withdrawals = withdrawals;
+          //   this.turns = turns;
+          //   this.scoreToAdd = scoreToAdd;
+          //   this.turnLength = this.currentTime - this.lastPieceTime;
+          //   this.averageTurn =
+          //     this.convertTimeToSecs(this.turnLength + this.currentTime) /
+          //     (this.state.turn + turns);
+          // }
+          this.currentTime = {
+            minutes:
+              this.currentTime.minutes - prevMoveObj.stats.turnLength.minutes,
+            seconds:
+              this.currentTime.seconds - prevMoveObj.stats.turnLength.seconds
+          };
+
+          obj = {
+            boardMap: newBoardMap,
+            cartMap: newCartMap,
+            turn: prevState.turn - prevMoveObj.stats.turns,
+            withdrawals: prevState.withdrawals - prevMoveObj.stats.withdrawals,
+            currentScore: prevState.currentScore - prevMoveObj.stats.scoreToAdd,
+            average: this.secondsToTime(
+              prevMoveObj.stats.averageTurnInSecsToAdd + this.state.average
+            ),
+            timeToDisplay: this.currentTime
+          };
+        } else if (lastPulledCard) {
+          newCartMap = this.getCartAfterRemovePiece(
+            [...prevState.cartMap],
+            lastPulledCard.indexInCart
+          );
+          obj = {
+            cartMap: newCartMap,
+            turn: prevState.turn - prevMoveObj.stats.turns,
+            withdrawals: prevState.withdrawals - prevMoveObj.stats.withdrawals,
+            currentScore: prevState.currentScore - prevMoveObj.stats.scoreToAdd,
+            average: this.secondsToTime(
+              prevMoveObj.stats.averageTurnInSecsToAdd + this.state.average
+            ),
+            timeToDisplay: this.currentTime
+          };
+        }
+        return obj;
+      });
+    }
+  }
+
+  handleNextButton() {
+    const nextMoveObj = this.redoMoves.pop();
+    if (nextMoveObj) {
+      const { cardInBoard, lastPulledCard, stats } = nextMoveObj;
+      this.movesHistory.push(nextMoveObj);
+
+      this.setState(prevState => {
+        let newCartMap,
+          newBoardMap,
+          obj = null;
+
+        if (cardInBoard) {
+          newBoardMap = this.getUpdatedBoard(
+            [...prevState.boardMap],
+            cardInBoard.card,
+            cardInBoard.row,
+            cardInBoard.col
+          );
+          newCartMap = this.getCartAfterRemovePiece(
+            [...prevState.cartMap],
+            cardInBoard.indexCart
+          );
+          obj = { boardMap: newBoardMap, cartMap: newCartMap };
+        } else if (lastPulledCard) {
+          newCartMap = this.getCartAfterAddPiece(
+            [...prevState.cartMap],
+            lastPulledCard.card,
+            lastPulledCard.indexInCart
+          );
+          obj = { cartMap: newCartMap };
+        }
+        return obj;
+      });
+    }
   }
 
   getUpdatedScore(score, addition) {
@@ -328,9 +483,21 @@ class Home extends React.Component {
     const { boardMap } = this.state;
     if (this.state.selectedCard) {
       const { side1, side2 } = this.state.selectedCard["value"];
+      let turnLength = {
+        minutes: this.currentTime.minutes - this.lastPieceTime.minutes,
+        seconds: this.currentTime.seconds - this.lastPieceTime.seconds
+      };
+      let currAverage =
+        this.convertTimeToSecs({
+          minutes: turnLength.minutes + this.currentTime.minutes,
+          seconds: turnLength.seconds + this.currentTime.seconds
+        }) /
+        (this.state.turn + 1);
+      let prevAverage = this.convertTimeToSecs(this.state.average);
+      let averageTurnInSecsToAdd = currAverage - prevAverage;
 
       let neighborsObj = this.getNeighborsObj(row, col);
-
+      let currentStatsObject = null;
       let card = new Card(false, side1, side2, true);
 
       const neighborName = Object.keys(neighborsObj).filter(function(row) {
@@ -350,12 +517,22 @@ class Home extends React.Component {
           card: card
         },
         lastPulledCard: null,
-        stats: {
-          currentScore: this.state.currentScore + side1 + side2,
-          turn: this.state.turn,
-          time: this.lastPieceTime
-        }
+        stats: new this.statsObj(
+          0,
+          1,
+          side1 + side2,
+          turnLength,
+          averageTurnInSecsToAdd
+        )
+        // stats: {
+        //   currentScore: side1 + side2,
+        //   turn: 1,
+        //   time: this.currentTime,
+        //   withdrawals: 0,
+        //   averageTurn: this.state.average
+        // }
       };
+      console.log("movesHistory pushed obj: " + moveObj);
       this.movesHistory.push(moveObj);
       this.locatePieceOnBoard(row, col, card);
     }
@@ -415,24 +592,27 @@ class Home extends React.Component {
   }
 
   handleCartClick(indexCart, card) {
-    console.log("clicked" + indexCart);
-    this.isTimerResetNeeded = false;
-    this.setState(prevState => {
-      const boardMap = this.getBoardWithSignsCells(
-        [...prevState.boardMap],
-        card
-      );
-      const obj = this.getUpdatedCart([...prevState.cartMap], indexCart);
-      const cartMap = obj.cartMap;
-      const turn = obj.turn;
-
-      return {
-        boardMap: boardMap,
-        cartMap: cartMap,
-        selectedCard: { value: card, index: indexCart },
-        turn: turn
-      };
-    });
+    if (this.isGameRunning) {
+      console.log("clicked" + indexCart);
+      this.isTimerResetNeeded = false;
+      this.setState(prevState => {
+        const boardMap = this.getBoardWithSignsCells(
+          [...prevState.boardMap],
+          card
+        );
+        const obj = this.getUpdatedCart([...prevState.cartMap], indexCart);
+        const cartMap = obj.cartMap;
+        const turn = obj.turn;
+        const withdrawals = DominoStackLogic.getNumOfWithdrawals();
+        return {
+          boardMap: boardMap,
+          cartMap: cartMap,
+          selectedCard: { value: card, index: indexCart },
+          turn: turn,
+          withdrawals: withdrawals
+        };
+      });
+    }
   }
 
   getBoardWithSignsCells(board, card) {
@@ -444,13 +624,26 @@ class Home extends React.Component {
     return board;
   }
 
+  convertTimeToSecs(time) {
+    return time.minutes * 60 + time.seconds;
+  }
+
+  statsObj(withdrawals, turns, scoreToAdd, turnLength, averageTurn) {
+    this.withdrawals = withdrawals;
+    this.turns = turns;
+    this.scoreToAdd = scoreToAdd;
+    this.turnLength = turnLength;
+    this.averageTurnInSecsToAdd = averageTurn;
+  }
+
   getUpdatedCart(cartMap, indexCart) {
     for (let i = 0; i < cartMap.length; i++) {
       if (cartMap[i].valid) cartMap[i].valid = undefined;
     }
     cartMap[indexCart].valid = true;
-    let turn = this.state.turn;
-
+    let numOfTurnsToAdd = 0;
+    let numOfWithdrawalsToAdd = 0;
+    this.isPiecePlaceOnBoard = false;
     while (
       !this.isTheFirstTurn() &&
       !this.isExistPieceForValidSquares(cartMap)
@@ -458,43 +651,84 @@ class Home extends React.Component {
       let domino = DominoStackLogic.getCard();
       if (domino) {
         cartMap.push(domino);
-        turn++;
+        numOfTurnsToAdd++;
+        numOfWithdrawalsToAdd++;
+        let turnLength = {
+          minutes: this.currentTime.minutes - this.lastPieceTime.minutes,
+          seconds: this.currentTime.seconds - this.lastPieceTime.seconds
+        };
+
+        let currAverage =
+          this.convertTimeToSecs({
+            minutes: turnLength.minutes + this.currentTime.minutes,
+            seconds: turnLength.seconds + this.currentTime.seconds
+          }) /
+          (this.state.turn + 1);
+        let prevAverage = this.convertTimeToSecs(this.state.average);
+        let averageTurnInSecsToAdd = currAverage - prevAverage;
+
         const moveObj = {
           cardInBoard: null,
-          lastPulledCard: { card: domino },
-          stats: {
-            currentScore: this.state.currentScore,
-            turn: turn,
-            time: this.lastPieceTime
-          }
+          lastPulledCard: { card: domino, indexInCart: cartMap.length - 1 },
+          stats: new this.statsObj(
+            numOfWithdrawalsToAdd,
+            numOfTurnsToAdd,
+            0,
+            turnLength,
+            averageTurnInSecsToAdd
+          )
+          // stats: {
+          //   currentScore: 0,
+          //   turn: numOfTurnsToAdd,
+          //   turnLength: this.currentTime,
+          //   withdrawals: numOfWithdrawalsToAdd,
+          //   averageTurn: this.state.average
+          // }
         };
+        console.log("movesHistory pushed obj: " + moveObj.stats.turnLength);
         this.movesHistory.push(moveObj);
       } else {
         this.isGameRunning = false;
         this.isWin = false;
       }
     }
-    return { cartMap: cartMap, turn: turn };
+    return {
+      cartMap: cartMap,
+      turn: this.state.turn + numOfTurnsToAdd
+    };
   }
 
   saveCurrentTime(m, s) {
-    if (this.isDataTimerNeeded) {
-      console.log("minutes: " + m + "secondes: " + s);
-      this.lastPieceTime = { minutes: m, secondes: s };
-      this.isDataTimerNeeded = false;
-    }
+    this.currentTime = { minutes: m, seconds: s };
+  }
+
+  secondsToTime(secs) {
+    let hours = Math.floor(secs / (60 * 60));
+
+    let divisor_for_minutes = secs % (60 * 60);
+    let minutes = Math.floor(divisor_for_minutes / 60);
+
+    let divisor_for_seconds = divisor_for_minutes % 60;
+    let seconds = Math.ceil(divisor_for_seconds);
+
+    let obj = {
+      hours: hours,
+      minutes: minutes,
+      seconds: seconds
+    };
+    return obj;
   }
 
   render() {
-    const Withdrawals = DominoStackLogic.getNumOfWithdrawals();
+    //const Withdrawals = DominoStackLogic.getNumOfWithdrawals();
     let newGameButton,
       prevButton,
       nextButton = null;
     let gameDoneSentence = null;
     if (!this.isGameRunning) {
       newGameButton = <button onClick={this.restartGame}>newGame</button>;
-      prevButton = <button> Prev</button>;
-      nextButton = <button> Next</button>;
+      prevButton = <button onClick={this.handlePrevButton}> Prev</button>;
+      nextButton = <button onClick={this.handleNextButton}> Next</button>;
 
       if (this.isWin) {
         gameDoneSentence = <p>YOU WINNER!!!</p>;
@@ -511,13 +745,15 @@ class Home extends React.Component {
             sendCurrentTime={(m, s) => this.saveCurrentTime(m, s)}
             isDataTimerNeeded={this.isDataTimerNeeded}
             isResetNeeded={this.isTimerResetNeeded}
+            isGameRunning={this.isGameRunning}
+            timeToDisplay={this.state.timeToDisplay}
           />
           <Stats
             id="statistics"
             currentScore={this.state.currentScore}
             turn={this.state.turn}
-            withdrawals={Withdrawals}
-            currentTime={this.lastPieceTime}
+            withdrawals={this.state.withdrawals}
+            average={this.state.average}
           />
         </div>
         <div id="boardFrame">

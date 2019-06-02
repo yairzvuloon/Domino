@@ -6,8 +6,10 @@ class Timer extends React.Component {
     this.timer = 0;
     this.startTimer = this.startTimer.bind(this);
     this.resetTimer = this.resetTimer.bind(this);
+    this.stopInterval = this.stopInterval.bind(this);
     this.countUp = this.countUp.bind(this);
-    this.startTimer();
+    this.displaySpecificTime = this.displaySpecificTime.bind(this);
+    this.startTimer({ m: 0, s: 0 });
     this.transferDataToHome = props.sendCurrentTime;
   }
 
@@ -30,19 +32,27 @@ class Timer extends React.Component {
 
   stopInterval() {
     clearInterval(this.timer);
-    this.timer = 0;
   }
 
   resetTimer() {
     this.stopInterval();
-    this.startTimer();
+    this.timer = 0;
+    this.startTimer({ m: 0, s: 0 });
     this.setState(() => ({ time: {}, seconds: 0 }));
   }
 
-  startTimer() {
-    if (this.timer === 0) {
-      this.timer = setInterval(this.countUp, 1000);
-    }
+  startTimer(initialTime) {
+    this.timer = initialTime.m * 60 + initialTime.s;
+    this.timer = setInterval(this.countUp, 1000);
+  }
+
+  displaySpecificTime(time) {
+    this.setState((prevState) => {
+      return {
+        time: time,
+        seconds:prevState.seconds
+      };
+    });
   }
 
   countUp() {
@@ -61,9 +71,18 @@ class Timer extends React.Component {
       this.props.isResetNeeded
     ) {
       this.resetTimer();
+
+    } else if (!this.props.isGameRunning) {
+      this.stopInterval();
+      if (this.props.timeToDisplay !== prevProps.timeToDisplay) {
+        this.displaySpecificTime({
+          h: 0,
+          m: this.props.timeToDisplay.minutes,
+          s: this.props.timeToDisplay.seconds
+        });
+      }
     }
   }
-
   render() {
     this.transferDataToHome(this.state.time.m, this.state.time.s);
 
