@@ -35,8 +35,11 @@ class Home extends React.Component {
     this.handlePrevButton = this.handlePrevButton.bind(this);
     this.handleNextButton = this.handleNextButton.bind(this);
     this.convertTimeToSecs = this.convertTimeToSecs.bind(this);
+    this.getTurnDuration = this.getTurnDuration.bind(this);
     this.statsObj = this.statsObj.bind(this);
     this.cleanAllFlags = this.cleanAllFlags.bind(this);
+    this.getNextAverageTurn = this.getNextAverageTurn.bind(this);
+    this.getAverageDiffInSecs = this.getAverageDiffInSecs.bind(this);
 
     this.isGameRunning = true;
     this.isWin = false;
@@ -200,6 +203,7 @@ class Home extends React.Component {
     cartMap[index] = new Card(false);
     return cartMap;
   }
+
   calculateAverageOfTurn() {
     this.lastPieceTime = this.currentTime;
     let seconds = this.lastPieceTime.minutes * 60 + this.lastPieceTime.seconds;
@@ -457,28 +461,44 @@ class Home extends React.Component {
     return card;
   }
 
+  getTurnDuration() {
+    const turnLength = {
+      minutes: this.currentTime.minutes - this.lastPieceTime.minutes,
+      seconds: this.currentTime.seconds - this.lastPieceTime.seconds
+    };
+
+    return turnLength;
+  }
+
+  getNextAverageTurn() {
+    let currentTurnLength = this.getTurnDuration();
+    let nextAverage = this.convertTimeToSecs(
+      secondsToTime(
+        this.convertTimeToSecs({
+          minutes: currentTurnLength.minutes + this.lastPieceTime.minutes,
+          seconds: currentTurnLength.seconds + this.lastPieceTime.seconds
+        }) /
+          (this.state.turn + 1)
+      )
+    );
+    return nextAverage;
+  }
+
+  getAverageDiffInSecs() {
+    const currAverage = this.getNextAverageTurn();
+    const prevAverage = this.convertTimeToSecs(this.state.average);
+    return currAverage - prevAverage;
+  }
+
   runMove(row, col) {
     const { boardMap } = this.state;
+
     if (this.state.selectedCard) {
       const { side1, side2 } = this.state.selectedCard["value"];
-      let turnLength = {
-        minutes: this.currentTime.minutes - this.lastPieceTime.minutes,
-        seconds: this.currentTime.seconds - this.lastPieceTime.seconds
-      };
-      let currAverage = this.convertTimeToSecs(
-        secondsToTime(
-          this.convertTimeToSecs({
-            minutes: turnLength.minutes + this.lastPieceTime.minutes,
-            seconds: turnLength.seconds + this.lastPieceTime.seconds
-          }) /
-            (this.state.turn + 1)
-        )
-      );
-      let prevAverage = this.convertTimeToSecs(this.state.average);
-      let averageTurnInSecsToAdd = currAverage - prevAverage;
+
+      let averageTurnInSecsToAdd = this.getAverageDiffInSecs();
 
       let neighborsObj = this.getNeighborsObj(row, col);
-      let currentStatsObject = null;
       let card = new Card(false, side1, side2, true);
 
       const neighborName = Object.keys(neighborsObj).filter(function(row) {
@@ -490,6 +510,7 @@ class Home extends React.Component {
         let piece = boardMap[neighborLocation.row][neighborLocation.col];
         card = this.createPiece(neighborName[0], piece, side1, side2);
       }
+
       const moveObj = {
         cardInBoard: {
           indexCart: this.state.selectedCard.index,
@@ -506,7 +527,7 @@ class Home extends React.Component {
           averageTurnInSecsToAdd
         )
       };
-      console.log("movesHistory pushed obj: " + moveObj);
+
       this.movesHistory.push(moveObj);
       this.locatePieceOnBoard(row, col, card);
     }

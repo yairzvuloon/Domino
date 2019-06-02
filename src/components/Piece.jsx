@@ -46,9 +46,10 @@ export class ValidPiece extends React.Component {
   constructor(props) {
     super(props);
     this.validPieceRef = React.createRef();
+    this.scrollIntoCenter = this.scrollIntoCenter.bind(this);
   }
 
-  componentDidUpdate() {
+  scrollIntoCenter() {
     if (this.validPieceRef.current) {
       this.validPieceRef.current.scrollIntoView({
         behavior: "auto",
@@ -58,15 +59,11 @@ export class ValidPiece extends React.Component {
       console.log("afters scrolled");
     }
   }
+  componentDidUpdate() {
+    this.scrollIntoCenter();
+  }
   componentDidMount() {
-    if (this.validPieceRef.current) {
-      this.validPieceRef.current.scrollIntoView({
-        behavior: "auto",
-        block: "center",
-        inline: "center"
-      });
-      console.log("afters scrolled");
-    }
+    this.scrollIntoCenter();
   }
 
   render() {
