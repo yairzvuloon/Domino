@@ -37,9 +37,15 @@ class Home extends React.Component {
     this.convertTimeToSecs = this.convertTimeToSecs.bind(this);
     this.getTurnDuration = this.getTurnDuration.bind(this);
     this.statsObj = this.statsObj.bind(this);
+    this.removeAllValidNeighbors = this.removeAllValidNeighbors.bind(this);
     this.cleanAllFlags = this.cleanAllFlags.bind(this);
     this.getNextAverageTurn = this.getNextAverageTurn.bind(this);
     this.getAverageDiffInSecs = this.getAverageDiffInSecs.bind(this);
+    this.isValidCell = this.isValidCell.bind(this);
+    this.isNotEmpty = this.isNotEmpty.bind(this);
+    this.resetBoard = this.resetBoard.bind(this);
+    this.isTheFirstPiece = this.isTheFirstPiece.bind(this);
+    this.isJoker = this.isJoker.bind(this);
 
     this.isGameRunning = true;
     this.isWin = false;
@@ -70,6 +76,13 @@ class Home extends React.Component {
     this.setState(() => getInitialState());
   }
 
+  resetBoard() {
+    const initialBoard = setInitialBoard(57);
+    this.setState(() => {
+      return { boardMap: initialBoard };
+    });
+  }
+
   isCartEmpty() {
     const { cartMap } = this.state;
     const { index } = this.state.selectedCard;
@@ -96,6 +109,61 @@ class Home extends React.Component {
       boardMap[row][col].valid !== true &&
       boardMap[row][col].isLaying === undefined
     );
+  }
+
+  isValidCell(row, col) {
+    return this.state.boardMap[row][col].valid;
+  }
+
+  createCopyRow(matrix, i_Row) {
+    let size = 0;
+    if (matrix[i_Row]) size = matrix[i_Row].length;
+
+    const array = new Array(size);
+    for (let i = 0; i < size; i++) {
+      array[i] = matrix[i_Row][i];
+    }
+    return array;
+  }
+
+  removeRowColElementFromArray(arr, row, col) {
+    let val = false;
+    for (var idx = 0; idx < arr.length; idx++)
+      if (arr[idx].i === row && arr[idx].j === col) {
+        val = arr[idx].i === row && arr[idx].j === col;
+        arr.splice(idx, 1);
+        break;
+      }
+    return val;
+  }
+
+  getCartMapAfterRemoveCard(index, cartMap) {
+    cartMap[index] = new Card(false);
+    return cartMap;
+  }
+
+  calculateAverageOfTurn() {
+    this.lastPieceTime = this.currentTime;
+    let seconds = this.lastPieceTime.minutes * 60 + this.lastPieceTime.seconds;
+    let averageInSecondsFormat = seconds / (this.state.turn + 1);
+    return secondsToTime(averageInSecondsFormat);
+  }
+
+  removePieceFromCart() {
+    const { index } = this.state.selectedCard;
+    this.setState(prevState => {
+      const newCartMap = this.getCartMapAfterRemoveCard(
+        index,
+        prevState.cartMap
+      );
+      if (this.isCartEmpty()) {
+        this.isGameRunning = false;
+        this.isWin = true;
+      }
+      return {
+        cartMap: newCartMap
+      };
+    });
   }
 
   updateValidLocationsByNumber(row, col, card) {
@@ -132,28 +200,6 @@ class Home extends React.Component {
     }
   }
 
-  createCopyRow(matrix, i_Row) {
-    let size = 0;
-    if (matrix[i_Row]) size = matrix[i_Row].length;
-
-    const array = new Array(size);
-    for (let i = 0; i < size; i++) {
-      array[i] = matrix[i_Row][i];
-    }
-    return array;
-  }
-
-  removeRowColElementFromArray(arr, row, col) {
-    let val = false;
-    for (var idx = 0; idx < arr.length; idx++)
-      if (arr[idx].i === row && arr[idx].j === col) {
-        val = arr[idx].i === row && arr[idx].j === col;
-        arr.splice(idx, 1);
-        break;
-      }
-    return val;
-  }
-
   removeValidLocation(row, col, card) {
     let length1 = this.validLocationsArray[card.side1].length;
     let length2 = this.validLocationsArray[card.side2].length;
@@ -179,33 +225,73 @@ class Home extends React.Component {
     }
   }
 
-  removePieceFromCart() {
-    const { index } = this.state.selectedCard;
-    this.setState(prevState => {
-      const newCartMap = this.getCartMapAfterRemoveCard(
-        index,
-        prevState.cartMap
-      );
-      if (this.isCartEmpty()) {
-        this.isGameRunning = false;
-        this.isWin = true;
+  isNotEmpty(row, col) {
+    return this.state.boardMap[row][col].isLaying !== undefined;
+  }
+
+  isLaying(row, col) {
+    return this.state.boardMap[row][col].isLaying === true;
+  }
+
+  isJoker(row, col) {
+    let retVal = false;
+    if (this.isNotEmpty(row, col)) {
+      retVal =
+        this.state.boardMap[row][col].side1 ===
+        this.state.boardMap[row][col].side2;
+    }
+    return retVal;
+  }
+
+  addValidLocation(row, col, card) {
+    if (card.side1 !== card.side2) {
+      if (card.isLaying) {
+        if (this.isNotEmpty(row, col - 1)) {
+          this.validLocationsArray[card.side1].push({ i: row, j: col });
+        }
+        if (this.isNotEmpty(row, col + 1))
+          this.validLocationsArray[card.side2].push({ i: row, j: col });
+      } else if (card.isLaying === false) {
+        if (this.isNotEmpty(row - 1, col))
+          this.validLocationsArray[card.side1].push({ i: row, j: col });
+        if (this.isNotEmpty(row + 1, col))
+          this.validLocationsArray[card.side2].push({ i: row, j: col });
       }
-      return {
-        cartMap: newCartMap
-      };
-    });
+    } else if (card.side1 === card.side2) {
+      if (this.isNotEmpty(row, col - 1))
+        this.validLocationsArray[card.side1].push({ i: row, j: col });
+      if (this.isNotEmpty(row, col + 1))
+        this.validLocationsArray[card.side1].push({ i: row, j: col });
+      if (this.isNotEmpty(row - 1, col))
+        this.validLocationsArray[card.side1].push({ i: row, j: col });
+      if (this.isNotEmpty(row + 1, col))
+        this.validLocationsArray[card.side1].push({ i: row, j: col });
+    }
   }
 
-  getCartMapAfterRemoveCard(index, cartMap) {
-    cartMap[index] = new Card(false);
-    return cartMap;
-  }
-
-  calculateAverageOfTurn() {
-    this.lastPieceTime = this.currentTime;
-    let seconds = this.lastPieceTime.minutes * 60 + this.lastPieceTime.seconds;
-    let averageInSecondsFormat = seconds / (this.state.turn + 1);
-    return secondsToTime(averageInSecondsFormat);
+  removeAllValidNeighbors(row, col, card) {
+    if (card.side1 !== card.side2) {
+      if (card.isLaying) {
+        if (this.isEmptyAndNotValid(row, col - 1))
+          this.removeValidLocation(row, col - 1, card);
+        if (this.isEmptyAndNotValid(row, col + 1))
+          this.removeValidLocation(row, col + 1, card);
+      } else {
+        if (this.isEmptyAndNotValid(row - 1, col))
+          this.removeValidLocation(row - 1, col, card);
+        if (this.isEmptyAndNotValid(row + 1, col))
+          this.removeValidLocation(row + 1, col, card);
+      }
+    } else if (card.side1 === card.side2) {
+      if (this.isEmptyAndNotValid(row, col - 1))
+        this.removeValidLocation(row, col - 1, card);
+      if (this.isEmptyAndNotValid(row, col + 1))
+        this.removeValidLocation(row, col + 1, card);
+      if (this.isEmptyAndNotValid(row - 1, col))
+        this.removeValidLocation(row - 1, col, card);
+      if (this.isEmptyAndNotValid(row + 1, col))
+        this.removeValidLocation(row + 1, col, card);
+    }
   }
 
   locatePieceOnBoard(row, col, card) {
@@ -255,8 +341,24 @@ class Home extends React.Component {
     return cart;
   }
 
+  isTheFirstPiece(row, col, card) {
+    return (
+      (card.isLaying &&
+        this.isEmptyAndNotValid(row, col - 1) &&
+        this.isEmptyAndNotValid(row, col + 1)) ||
+      (!card.isLaying &&
+        this.isEmptyAndNotValid(row - 1, col) &&
+        this.isEmptyAndNotValid(row + 1, col)) ||
+      (card.side1 === card.side2 &&
+        this.isEmptyAndNotValid(row, col - 1) &&
+        this.isEmptyAndNotValid(row, col + 1) &&
+        this.isEmptyAndNotValid(row - 1, col) &&
+        this.isEmptyAndNotValid(row + 1, col))
+    );
+  }
   handlePrevButton() {
     const prevMoveObj = this.movesHistory.pop();
+
     if (prevMoveObj) {
       const { cardInBoard, lastPulledCard, stats } = prevMoveObj;
       this.redoMoves.push(prevMoveObj);
@@ -270,47 +372,64 @@ class Home extends React.Component {
 
       this.setState(prevState => {
         let newCartMap,
-          newBoardMap,
           obj = null;
+        let newBoardMap = prevState.boardMap;
+
         if (cardInBoard) {
           newBoardMap = this.getBoardAfterRemovePiece(
             [...prevState.boardMap],
             cardInBoard.row,
             cardInBoard.col
           );
+          this.updateValidCellsInBoard(
+            newBoardMap,
+            this.state.selectedCard["value"],
+            false
+          );
           newCartMap = this.getCartAfterAddPiece(
             [...prevState.cartMap],
             cardInBoard.card,
             cardInBoard.indexCart
           );
+          if (this.isGameRunning) {
+            this.removeAllValidNeighbors(
+              cardInBoard.row,
+              cardInBoard.col,
+              cardInBoard.card
+            );
+            this.addValidLocation(
+              cardInBoard.row,
+              cardInBoard.col,
+              cardInBoard.card
+            );
 
-          obj = {
-            boardMap: newBoardMap,
-            cartMap: newCartMap,
-            turn: prevState.turn - prevMoveObj.stats.turns,
-            withdrawals: prevState.withdrawals - prevMoveObj.stats.withdrawals,
-            currentScore: prevState.currentScore - prevMoveObj.stats.scoreToAdd,
-            average: secondsToTime(
-              averageSecsFormat - prevMoveObj.stats.averageTurnInSecsToAdd
-            ),
-            timeToDisplay: this.currentTime
-          };
+            if (
+              this.isTheFirstPiece(
+                cardInBoard.row,
+                cardInBoard.col,
+                cardInBoard.card
+              )
+            )
+              newBoardMap = setInitialBoard(57);
+          }
         } else if (lastPulledCard) {
           newCartMap = this.getCartAfterRemovePiece(
             [...prevState.cartMap],
             lastPulledCard.indexInCart
           );
-          obj = {
-            cartMap: newCartMap,
-            turn: prevState.turn - prevMoveObj.stats.turns,
-            withdrawals: prevState.withdrawals - prevMoveObj.stats.withdrawals,
-            currentScore: prevState.currentScore - prevMoveObj.stats.scoreToAdd,
-            average: secondsToTime(
-              averageSecsFormat - prevMoveObj.stats.averageTurnInSecsToAdd
-            ),
-            timeToDisplay: this.currentTime
-          };
         }
+        obj = {
+          boardMap: newBoardMap,
+          cartMap: newCartMap,
+          turn: prevState.turn - prevMoveObj.stats.turns,
+          withdrawals: prevState.withdrawals - prevMoveObj.stats.withdrawals,
+          currentScore: prevState.currentScore - prevMoveObj.stats.scoreToAdd,
+          average: secondsToTime(
+            averageSecsFormat - prevMoveObj.stats.averageTurnInSecsToAdd
+          ),
+          timeToDisplay: this.currentTime
+        };
+
         return obj;
       });
     }
@@ -321,16 +440,20 @@ class Home extends React.Component {
     if (nextMoveObj) {
       const { cardInBoard, lastPulledCard, stats } = nextMoveObj;
       this.movesHistory.push(nextMoveObj);
+
       let averageSecsFormat = this.convertTimeToSecs(this.state.average);
+
       this.currentTime = {
         minutes:
           this.currentTime.minutes + nextMoveObj.stats.turnLength.minutes,
         seconds: this.currentTime.seconds + nextMoveObj.stats.turnLength.seconds
       };
+
       this.setState(prevState => {
         let newCartMap,
-          newBoardMap,
           obj = null;
+        let newBoardMap = prevState.boardMap;
+
         if (cardInBoard) {
           newBoardMap = this.getUpdatedBoard(
             [...prevState.boardMap],
@@ -342,35 +465,24 @@ class Home extends React.Component {
             [...prevState.cartMap],
             cardInBoard.indexCart
           );
-
-          obj = {
-            boardMap: newBoardMap,
-            cartMap: newCartMap,
-            turn: prevState.turn + nextMoveObj.stats.turns,
-            withdrawals: prevState.withdrawals + nextMoveObj.stats.withdrawals,
-            currentScore: prevState.currentScore + nextMoveObj.stats.scoreToAdd,
-            average: secondsToTime(
-              averageSecsFormat + nextMoveObj.stats.averageTurnInSecsToAdd
-            ),
-            timeToDisplay: this.currentTime
-          };
         } else if (lastPulledCard) {
           newCartMap = this.getCartAfterAddPiece(
             [...prevState.cartMap],
             lastPulledCard.card,
             lastPulledCard.indexInCart
           );
-          obj = {
-            cartMap: newCartMap,
-            turn: prevState.turn + nextMoveObj.stats.turns,
-            withdrawals: prevState.withdrawals + nextMoveObj.stats.withdrawals,
-            currentScore: prevState.currentScore + nextMoveObj.stats.scoreToAdd,
-            average: secondsToTime(
-              averageSecsFormat + nextMoveObj.stats.averageTurnInSecsToAdd
-            ),
-            timeToDisplay: this.currentTime
-          };
         }
+        obj = {
+          boardMap: newBoardMap,
+          cartMap: newCartMap,
+          turn: prevState.turn + nextMoveObj.stats.turns,
+          withdrawals: prevState.withdrawals + nextMoveObj.stats.withdrawals,
+          currentScore: prevState.currentScore + nextMoveObj.stats.scoreToAdd,
+          average: secondsToTime(
+            averageSecsFormat + nextMoveObj.stats.averageTurnInSecsToAdd
+          ),
+          timeToDisplay: this.currentTime
+        };
         return obj;
       });
     }
@@ -676,13 +788,12 @@ class Home extends React.Component {
   }
 
   render() {
+    let prevButton = <button onClick={this.handlePrevButton}> Prev</button>;
     let newGameButton,
-      prevButton,
       nextButton = null;
     let gameDoneSentence = null;
     if (!this.isGameRunning) {
       newGameButton = <button onClick={this.restartGame}>newGame</button>;
-      prevButton = <button onClick={this.handlePrevButton}> Prev</button>;
       nextButton = <button onClick={this.handleNextButton}> Next</button>;
 
       if (this.isWin) {
