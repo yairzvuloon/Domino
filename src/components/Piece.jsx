@@ -58,6 +58,16 @@ export class ValidPiece extends React.Component {
       console.log("afters scrolled");
     }
   }
+  componentDidMount() {
+    if (this.validPieceRef.current) {
+      this.validPieceRef.current.scrollIntoView({
+        behavior: "auto",
+        block: "center",
+        inline: "center"
+      });
+      console.log("afters scrolled");
+    }
+  }
 
   render() {
     return <div ref={this.validPieceRef} style={{ ...style.ValidPiece }} />;
