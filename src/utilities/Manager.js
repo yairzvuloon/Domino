@@ -1,8 +1,8 @@
 class DominoStack {
   constructor() {
-    this.indexesCardsBox = this.createShuffledArray(28);
     this.piecesAmount = 28;
-    this.indexesCardsBoxIndex = 27;
+    this.indexesCardsBox = this.createShuffledArray(this.piecesAmount);
+    this.indexesCardsBoxIndex = this.piecesAmount - 1;
     this.cardsArray = this.createCardsArray();
     //because of the initial state of stack
     this.numberOfDrawnFromStack = -7;
@@ -21,7 +21,7 @@ class DominoStack {
 
   getCard() {
     let ret = null;
-    if (this.indexesCardsBoxIndex > 0) {
+    if (this.piecesAmount > 0) {
       this.numberOfDrawnFromStack++;
       this.piecesAmount--;
       let cardIndex = this.indexesCardsBox.pop();
@@ -59,8 +59,8 @@ class DominoStack {
   }
 
   reset() {
-    this.indexesCardsBox = this.createShuffledArray(28);
-    this.indexesCardsBoxIndex = 27;
+    this.indexesCardsBox = this.createShuffledArray(this.piecesAmount);
+    this.indexesCardsBoxIndex = this.piecesAmount - 1;
     this.cardsArray = this.createCardsArray();
     //because of the initial state of stack
     this.numberOfDrawnFromStack = -7;

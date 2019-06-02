@@ -292,6 +292,13 @@ class Home extends React.Component {
       const { cardInBoard, lastPulledCard, stats } = prevMoveObj;
       this.redoMoves.push(prevMoveObj);
 
+      let averageSecsFormat = this.convertTimeToSecs(this.state.average);
+      this.currentTime = {
+        minutes:
+          this.currentTime.minutes - prevMoveObj.stats.turnLength.minutes,
+        seconds: this.currentTime.seconds - prevMoveObj.stats.turnLength.seconds
+      };
+
       this.setState(prevState => {
         let newCartMap,
           newBoardMap,
@@ -307,14 +314,6 @@ class Home extends React.Component {
             cardInBoard.card,
             cardInBoard.indexCart
           );
-
-          let averageSecsFormat = this.convertTimeToSecs(this.state.average);
-          this.currentTime = {
-            minutes:
-              this.currentTime.minutes - prevMoveObj.stats.turnLength.minutes,
-            seconds:
-              this.currentTime.seconds - prevMoveObj.stats.turnLength.seconds
-          };
 
           obj = {
             boardMap: newBoardMap,
@@ -353,7 +352,12 @@ class Home extends React.Component {
     if (nextMoveObj) {
       const { cardInBoard, lastPulledCard, stats } = nextMoveObj;
       this.movesHistory.push(nextMoveObj);
-
+      let averageSecsFormat = this.convertTimeToSecs(this.state.average);
+      this.currentTime = {
+        minutes:
+          this.currentTime.minutes + nextMoveObj.stats.turnLength.minutes,
+        seconds: this.currentTime.seconds + nextMoveObj.stats.turnLength.seconds
+      };
       this.setState(prevState => {
         let newCartMap,
           newBoardMap,
@@ -369,14 +373,6 @@ class Home extends React.Component {
             [...prevState.cartMap],
             cardInBoard.indexCart
           );
-
-          let averageSecsFormat = this.convertTimeToSecs(this.state.average);
-          this.currentTime = {
-            minutes:
-              this.currentTime.minutes + nextMoveObj.stats.turnLength.minutes,
-            seconds:
-              this.currentTime.seconds + nextMoveObj.stats.turnLength.seconds
-          };
 
           obj = {
             boardMap: newBoardMap,
@@ -619,6 +615,10 @@ class Home extends React.Component {
         const cartMap = obj.cartMap;
         const turn = obj.turn;
         const withdrawals = DominoStackLogic.getNumOfWithdrawals();
+        if (DominoStackLogic.getNumOfPieces() === 0) {
+          this.isGameRunning = false;
+          this.isWin = false;
+        }
         return {
           boardMap: boardMap,
           cartMap: cartMap,
@@ -661,7 +661,8 @@ class Home extends React.Component {
     this.isPiecePlaceOnBoard = false;
     while (
       !this.isTheFirstTurn() &&
-      !this.isExistPieceForValidSquares(cartMap)
+      !this.isExistPieceForValidSquares(cartMap) &&
+      DominoStackLogic.getNumOfPieces() > 0
     ) {
       let domino = DominoStackLogic.getCard();
       if (domino) {
@@ -693,9 +694,6 @@ class Home extends React.Component {
         };
         console.log("movesHistory pushed obj: " + moveObj.stats.turnLength);
         this.movesHistory.push(moveObj);
-      } else {
-        this.isGameRunning = false;
-        this.isWin = false;
       }
     }
     return {
