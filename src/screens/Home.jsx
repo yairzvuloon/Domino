@@ -3,40 +3,42 @@ import Board from "../components/Board.jsx";
 import Cart from "../components/Cart.jsx";
 import Timer from "../components/Timer.jsx";
 import "../style/HomeStyle.css";
-import { DominoStackLogic } from "../utilities/Manager";
+import Card, {
+  setInitialBoard,
+  setInitialCart,
+  DominoStackLogic,
+  secondsToTime
+} from "../utilities/Manager";
 import Stats from "../components/Stats.jsx";
-class Card {
-  constructor(i_Valid, i_Side1, i_Side2, i_IsLaying) {
-    this.valid = i_Valid;
-    this.side1 = i_Side1;
-    this.side2 = i_Side2;
-    this.isLaying = i_IsLaying;
-  }
-}
+
+const getInitialState = () => {
+  const initialBoard = setInitialBoard(57);
+  const initialCart = setInitialCart();
+  const initialState = {
+    boardMap: initialBoard,
+    cartMap: initialCart,
+    selectedCard: null,
+    currentScore: 0,
+    turn: 0,
+    withdrawals: 0,
+    average: { minutes: 0, seconds: 0 },
+    timeToDisplay: null
+  };
+  return initialState;
+};
+
 class Home extends React.Component {
   constructor(props) {
     super(props);
-    const initialBoard = this.setInitialBoard(57);
-    const initialCart = this.setInitialCart();
-    this.state = {
-      boardMap: initialBoard,
-      cartMap: initialCart,
-      selectedCard: null,
-      currentScore: 0,
-      turn: 0,
-      withdrawals: 0,
-      average: { minutes: 0, seconds: 0 },
-      timeToDisplay: null
-    };
-    this.isGameRunning = true;
-    this.isWin = false;
-    this.cartEmptyFlag = false;
+    this.state = getInitialState();
     this.restartGame = this.restartGame.bind(this);
     this.handlePrevButton = this.handlePrevButton.bind(this);
     this.handleNextButton = this.handleNextButton.bind(this);
     this.convertTimeToSecs = this.convertTimeToSecs.bind(this);
     this.statsObj = this.statsObj.bind(this);
-
+    this.isGameRunning = true;
+    this.isWin = false;
+    this.cartEmptyFlag = false;
     this.validLocationsArray = this.createEmptyValidLocations();
     this.isDataTimerNeeded = false;
     this.currentTime = { minutes: 0, seconds: 0 };
@@ -58,46 +60,7 @@ class Home extends React.Component {
     this.isGameRunning = true;
     this.isWin = false;
     this.cartEmptyFlag = false;
-    this.setState(() => {
-      const initialBoard = this.setInitialBoard(57);
-      const initialCart = this.setInitialCart();
-      return {
-        boardMap: initialBoard,
-        cartMap: initialCart,
-        selectedCard: null,
-        currentScore: 0,
-        turn: 0,
-        withdrawals: 0,
-        average: { minutes: 0, seconds: 0 },
-        timeToDisplay: null
-      };
-    });
-  }
-
-  createEmptyBoard(size) {
-    let matrix = new Array(size);
-    for (let i = 0; i < size; i++) {
-      matrix[i] = new Array(size);
-      for (let j = 0; j < size; j++) {
-        matrix[i][j] = new Card(false);
-      }
-    }
-    return matrix;
-  }
-
-  setInitialBoard(size) {
-    let board = this.createEmptyBoard(size);
-    let mid = Math.floor(size / 2);
-    board[mid][mid].valid = true;
-    return board;
-  }
-
-  setInitialCart() {
-    let cart = new Array(7);
-    for (let i = 0; i < 7; i++) {
-      cart[i] = DominoStackLogic.getCard();
-    }
-    return cart;
+    this.setState(() => getInitialState());
   }
 
   isCartEmpty() {
@@ -234,7 +197,7 @@ class Home extends React.Component {
     this.lastPieceTime = this.currentTime;
     let seconds = this.lastPieceTime.minutes * 60 + this.lastPieceTime.seconds;
     let averageInSecondsFormat = seconds / (this.state.turn + 1);
-    return this.secondsToTime(averageInSecondsFormat);
+    return secondsToTime(averageInSecondsFormat);
   }
 
   locatePieceOnBoard(row, col, card) {
@@ -321,7 +284,7 @@ class Home extends React.Component {
             turn: prevState.turn - prevMoveObj.stats.turns,
             withdrawals: prevState.withdrawals - prevMoveObj.stats.withdrawals,
             currentScore: prevState.currentScore - prevMoveObj.stats.scoreToAdd,
-            average: this.secondsToTime(
+            average: secondsToTime(
               averageSecsFormat - prevMoveObj.stats.averageTurnInSecsToAdd
             ),
             timeToDisplay: this.currentTime
@@ -336,7 +299,7 @@ class Home extends React.Component {
             turn: prevState.turn - prevMoveObj.stats.turns,
             withdrawals: prevState.withdrawals - prevMoveObj.stats.withdrawals,
             currentScore: prevState.currentScore - prevMoveObj.stats.scoreToAdd,
-            average: this.secondsToTime(
+            average: secondsToTime(
               averageSecsFormat - prevMoveObj.stats.averageTurnInSecsToAdd
             ),
             timeToDisplay: this.currentTime
@@ -380,7 +343,7 @@ class Home extends React.Component {
             turn: prevState.turn + nextMoveObj.stats.turns,
             withdrawals: prevState.withdrawals + nextMoveObj.stats.withdrawals,
             currentScore: prevState.currentScore + nextMoveObj.stats.scoreToAdd,
-            average: this.secondsToTime(
+            average: secondsToTime(
               averageSecsFormat + nextMoveObj.stats.averageTurnInSecsToAdd
             ),
             timeToDisplay: this.currentTime
@@ -396,7 +359,7 @@ class Home extends React.Component {
             turn: prevState.turn + nextMoveObj.stats.turns,
             withdrawals: prevState.withdrawals + nextMoveObj.stats.withdrawals,
             currentScore: prevState.currentScore + nextMoveObj.stats.scoreToAdd,
-            average: this.secondsToTime(
+            average: secondsToTime(
               averageSecsFormat + nextMoveObj.stats.averageTurnInSecsToAdd
             ),
             timeToDisplay: this.currentTime
@@ -496,7 +459,7 @@ class Home extends React.Component {
         seconds: this.currentTime.seconds - this.lastPieceTime.seconds
       };
       let currAverage = this.convertTimeToSecs(
-        this.secondsToTime(
+        secondsToTime(
           this.convertTimeToSecs({
             minutes: turnLength.minutes + this.lastPieceTime.minutes,
             seconds: turnLength.seconds + this.lastPieceTime.seconds
@@ -535,13 +498,6 @@ class Home extends React.Component {
           turnLength,
           averageTurnInSecsToAdd
         )
-        // stats: {
-        //   currentScore: side1 + side2,
-        //   turn: 1,
-        //   time: this.currentTime,
-        //   withdrawals: 0,
-        //   averageTurn: this.state.average
-        // }
       };
       console.log("movesHistory pushed obj: " + moveObj);
       this.movesHistory.push(moveObj);
@@ -662,7 +618,6 @@ class Home extends React.Component {
       minutes: 0,
       seconds: 0
     };
-
     while (
       !this.isTheFirstTurn() &&
       !this.isExistPieceForValidSquares(cartMap) &&
@@ -672,20 +627,11 @@ class Home extends React.Component {
       if (domino) {
         cartMap.push(domino);
         numOfTurnsToAdd++;
-
         const moveObj = {
           cardInBoard: null,
           lastPulledCard: { card: domino, indexInCart: cartMap.length - 1 },
           stats: new this.statsObj(1, 1, 0, turnLength, 0)
-          // stats: {
-          //   currentScore: 0,
-          //   turn: numOfTurnsToAdd,
-          //   turnLength: this.currentTime,
-          //   withdrawals: numOfWithdrawalsToAdd,
-          //   averageTurn: this.state.average
-          // }
         };
-        console.log("movesHistory pushed obj: " + moveObj.stats.turnLength);
         this.movesHistory.push(moveObj);
       }
     }
@@ -699,25 +645,7 @@ class Home extends React.Component {
     this.currentTime = { minutes: m, seconds: s };
   }
 
-  secondsToTime(secs) {
-    //let hours = Math.floor(secs / (60 * 60));
-
-    let divisor_for_minutes = secs % (60 * 60);
-    let minutes = Math.floor(divisor_for_minutes / 60);
-
-    let divisor_for_seconds = divisor_for_minutes % 60;
-    let seconds = Math.ceil(divisor_for_seconds);
-
-    let obj = {
-      //hours: hours,
-      minutes: minutes,
-      seconds: seconds
-    };
-    return obj;
-  }
-
   render() {
-    //const Withdrawals = DominoStackLogic.getNumOfWithdrawals();
     let newGameButton,
       prevButton,
       nextButton = null;

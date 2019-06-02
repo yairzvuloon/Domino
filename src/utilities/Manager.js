@@ -66,5 +66,54 @@ class DominoStack {
     this.numberOfDrawnFromStack = -7;
   }
 }
+class Card {
+  constructor(i_Valid, i_Side1, i_Side2, i_IsLaying) {
+    this.valid = i_Valid;
+    this.side1 = i_Side1;
+    this.side2 = i_Side2;
+    this.isLaying = i_IsLaying;
+  }
+}
+
+const createEmptyBoard = size => {
+  let matrix = new Array(size);
+  for (let i = 0; i < size; i++) {
+    matrix[i] = new Array(size);
+    for (let j = 0; j < size; j++) {
+      matrix[i][j] = new Card(false);
+    }
+  }
+  return matrix;
+};
+
+export const setInitialBoard = size => {
+  let board = createEmptyBoard(size);
+  let mid = Math.floor(size / 2);
+  board[mid][mid].valid = true;
+  return board;
+};
+
+export const setInitialCart = () => {
+  let cart = new Array(7);
+  for (let i = 0; i < 7; i++) {
+    cart[i] = DominoStackLogic.getCard();
+  }
+  return cart;
+};
+
+export const secondsToTime = secs => {
+  let divisor_for_minutes = secs % (60 * 60);
+  let minutes = Math.floor(divisor_for_minutes / 60);
+
+  let divisor_for_seconds = divisor_for_minutes % 60;
+  let seconds = Math.ceil(divisor_for_seconds);
+
+  let obj = {
+    minutes: minutes,
+    seconds: seconds
+  };
+  return obj;
+};
 
 export const DominoStackLogic = new DominoStack();
+export default Card;

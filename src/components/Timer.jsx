@@ -1,4 +1,5 @@
 import React from "react";
+import { secondsToTime } from "../utilities/Manager";
 class Timer extends React.Component {
   constructor(props) {
     super(props);
@@ -11,23 +12,6 @@ class Timer extends React.Component {
     this.displaySpecificTime = this.displaySpecificTime.bind(this);
     this.startTimer({ m: 0, s: 0 });
     this.transferDataToHome = props.sendCurrentTime;
-  }
-
-  secondsToTime(secs) {
-    //let hours = Math.floor(secs / (60 * 60));
-
-    let divisor_for_minutes = secs % (60 * 60);
-    let minutes = Math.floor(divisor_for_minutes / 60);
-
-    let divisor_for_seconds = divisor_for_minutes % 60;
-    let seconds = Math.ceil(divisor_for_seconds);
-
-    let obj = {
-      //h: hours,
-      m: minutes,
-      s: seconds
-    };
-    return obj;
   }
 
   stopInterval() {
@@ -47,10 +31,10 @@ class Timer extends React.Component {
   }
 
   displaySpecificTime(time) {
-    this.setState((prevState) => {
+    this.setState(prevState => {
       return {
         time: time,
-        seconds:prevState.seconds
+        seconds: prevState.seconds
       };
     });
   }
@@ -58,7 +42,7 @@ class Timer extends React.Component {
   countUp() {
     this.setState(prevState => {
       return {
-        time: this.secondsToTime(prevState.seconds),
+        time: secondsToTime(prevState.seconds),
         seconds: prevState.seconds + 1
       };
     });
@@ -71,12 +55,11 @@ class Timer extends React.Component {
       this.props.isResetNeeded
     ) {
       this.resetTimer();
-
     } else if (!this.props.isGameRunning) {
       this.stopInterval();
       if (this.props.timeToDisplay !== prevProps.timeToDisplay) {
         this.displaySpecificTime({
-         // h: 0,
+          // h: 0,
           m: this.props.timeToDisplay.minutes,
           s: this.props.timeToDisplay.seconds
         });
