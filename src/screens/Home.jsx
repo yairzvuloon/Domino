@@ -657,8 +657,12 @@ class Home extends React.Component {
     }
     cartMap[indexCart].valid = true;
     let numOfTurnsToAdd = 0;
-    let numOfWithdrawalsToAdd = 0;
     this.isPiecePlaceOnBoard = false;
+    let turnLength = {
+      minutes: 0,
+      seconds: 0
+    };
+
     while (
       !this.isTheFirstTurn() &&
       !this.isExistPieceForValidSquares(cartMap) &&
@@ -668,22 +672,11 @@ class Home extends React.Component {
       if (domino) {
         cartMap.push(domino);
         numOfTurnsToAdd++;
-        numOfWithdrawalsToAdd++;
-        let turnLength = {
-          minutes: this.currentTime.minutes - this.lastPieceTime.minutes,
-          seconds: this.currentTime.seconds - this.lastPieceTime.seconds
-        };
 
         const moveObj = {
           cardInBoard: null,
           lastPulledCard: { card: domino, indexInCart: cartMap.length - 1 },
-          stats: new this.statsObj(
-            numOfWithdrawalsToAdd,
-            numOfTurnsToAdd,
-            0,
-            turnLength,
-            0
-          )
+          stats: new this.statsObj(1, 1, 0, turnLength, 0)
           // stats: {
           //   currentScore: 0,
           //   turn: numOfTurnsToAdd,
