@@ -308,15 +308,6 @@ class Home extends React.Component {
             cardInBoard.indexCart
           );
 
-          // statsObj(withdrawals, turns, scoreToAdd) {
-          //   this.withdrawals = withdrawals;
-          //   this.turns = turns;
-          //   this.scoreToAdd = scoreToAdd;
-          //   this.turnLength = this.currentTime - this.lastPieceTime;
-          //   this.averageTurn =
-          //     this.convertTimeToSecs(this.turnLength + this.currentTime) /
-          //     (this.state.turn + turns);
-          // }
           let averageSecsFormat = this.convertTimeToSecs(this.state.average);
           this.currentTime = {
             minutes:
@@ -367,7 +358,6 @@ class Home extends React.Component {
         let newCartMap,
           newBoardMap,
           obj = null;
-
         if (cardInBoard) {
           newBoardMap = this.getUpdatedBoard(
             [...prevState.boardMap],
@@ -379,14 +369,42 @@ class Home extends React.Component {
             [...prevState.cartMap],
             cardInBoard.indexCart
           );
-          obj = { boardMap: newBoardMap, cartMap: newCartMap };
+
+          let averageSecsFormat = this.convertTimeToSecs(this.state.average);
+          this.currentTime = {
+            minutes:
+              this.currentTime.minutes + nextMoveObj.stats.turnLength.minutes,
+            seconds:
+              this.currentTime.seconds + nextMoveObj.stats.turnLength.seconds
+          };
+
+          obj = {
+            boardMap: newBoardMap,
+            cartMap: newCartMap,
+            turn: prevState.turn + nextMoveObj.stats.turns,
+            withdrawals: prevState.withdrawals + nextMoveObj.stats.withdrawals,
+            currentScore: prevState.currentScore + nextMoveObj.stats.scoreToAdd,
+            average: this.secondsToTime(
+              averageSecsFormat + nextMoveObj.stats.averageTurnInSecsToAdd
+            ),
+            timeToDisplay: this.currentTime
+          };
         } else if (lastPulledCard) {
           newCartMap = this.getCartAfterAddPiece(
             [...prevState.cartMap],
             lastPulledCard.card,
             lastPulledCard.indexInCart
           );
-          obj = { cartMap: newCartMap };
+          obj = {
+            cartMap: newCartMap,
+            turn: prevState.turn + nextMoveObj.stats.turns,
+            withdrawals: prevState.withdrawals + nextMoveObj.stats.withdrawals,
+            currentScore: prevState.currentScore + nextMoveObj.stats.scoreToAdd,
+            average: this.secondsToTime(
+              averageSecsFormat + nextMoveObj.stats.averageTurnInSecsToAdd
+            ),
+            timeToDisplay: this.currentTime
+          };
         }
         return obj;
       });
