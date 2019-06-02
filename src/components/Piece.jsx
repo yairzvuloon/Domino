@@ -41,7 +41,28 @@ export default Piece;
 
 export const EmptyPiece = () => <div style={{ ...style.container }} />;
 
-export const ValidPiece = () => <div style={{ ...style.ValidPiece }} />;
+//export const ValidPiece = () => <div style={{ ...style.ValidPiece }} />;
+export class ValidPiece extends React.Component {
+  constructor(props) {
+    super(props);
+    this.validPieceRef = React.createRef();
+  }
+
+  componentDidUpdate() {
+    if (this.validPieceRef.current) {
+      this.validPieceRef.current.scrollIntoView({
+        behavior: "auto",
+        block: "center",
+        inline: "center"
+      });
+      console.log("afters scrolled");
+    }
+  }
+
+  render() {
+    return <div ref={this.validPieceRef} style={{ ...style.ValidPiece }} />;
+  }
+}
 
 const size = "5vw";
 const style = {
