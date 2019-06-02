@@ -739,7 +739,7 @@ class Home extends React.Component {
 
     return (
       <div id="homeContainer">
-        <div id="StatsFrame">
+        <div id="statsFrame">
           <Timer
             id="timer"
             sendCurrentTime={(m, s) => this.saveCurrentTime(m, s)}
