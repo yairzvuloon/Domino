@@ -3,11 +3,16 @@ import Board from "../components/Board.jsx";
 import Cart from "../components/Cart.jsx";
 import Timer from "../components/Timer.jsx";
 import "../style/HomeStyle.css";
-import Card, {
+import {
+  Card,
+  NeighborsObj,
+  StatsObj,
   setInitialBoard,
   setInitialCart,
   DominoStackLogic,
-  secondsToTime
+  secondsToTime,
+  removeRowColElementFromArray,
+  createCopyRow
 } from "../utilities/Manager";
 import Stats from "../components/Stats.jsx";
 
@@ -36,7 +41,6 @@ class Home extends React.Component {
     this.handleNextButton = this.handleNextButton.bind(this);
     this.convertTimeToSecs = this.convertTimeToSecs.bind(this);
     this.getTurnDuration = this.getTurnDuration.bind(this);
-    this.statsObj = this.statsObj.bind(this);
     this.removeAllValidNeighbors = this.removeAllValidNeighbors.bind(this);
     this.cleanAllFlags = this.cleanAllFlags.bind(this);
     this.getNextAverageTurn = this.getNextAverageTurn.bind(this);
@@ -115,28 +119,6 @@ class Home extends React.Component {
     return this.state.boardMap[row][col].valid;
   }
 
-  createCopyRow(matrix, i_Row) {
-    let size = 0;
-    if (matrix[i_Row]) size = matrix[i_Row].length;
-
-    const array = new Array(size);
-    for (let i = 0; i < size; i++) {
-      array[i] = matrix[i_Row][i];
-    }
-    return array;
-  }
-
-  removeRowColElementFromArray(arr, row, col) {
-    let val = false;
-    for (var idx = 0; idx < arr.length; idx++)
-      if (arr[idx].i === row && arr[idx].j === col) {
-        val = arr[idx].i === row && arr[idx].j === col;
-        arr.splice(idx, 1);
-        break;
-      }
-    return val;
-  }
-
   getCartMapAfterRemoveCard(index, cartMap) {
     cartMap[index] = new Card(false);
     return cartMap;
@@ -149,6 +131,16 @@ class Home extends React.Component {
     return secondsToTime(averageInSecondsFormat);
   }
 
+  getCartAfterAddPiece(cart, card, indexCart) {
+    card.valid = undefined;
+    cart[indexCart] = card;
+    return cart;
+  }
+
+  getBoardAfterRemovePiece(board, row, col) {
+    board[row][col] = new Card(false);
+    return board;
+  }
   removePieceFromCart() {
     const { index } = this.state.selectedCard;
     this.setState(prevState => {
@@ -203,10 +195,10 @@ class Home extends React.Component {
   removeValidLocation(row, col, card) {
     let length1 = this.validLocationsArray[card.side1].length;
     let length2 = this.validLocationsArray[card.side2].length;
-    let arr1 = this.createCopyRow(this.validLocationsArray, card.side1);
-    let arr2 = this.createCopyRow(this.validLocationsArray, card.side2);
-    let output1 = this.removeRowColElementFromArray(arr1, row, col);
-    let output2 = this.removeRowColElementFromArray(arr2, row, col);
+    let arr1 = createCopyRow(this.validLocationsArray, card.side1);
+    let arr2 = createCopyRow(this.validLocationsArray, card.side2);
+    let output1 = removeRowColElementFromArray(arr1, row, col);
+    let output2 = removeRowColElementFromArray(arr2, row, col);
 
     if (output1) {
       length1--;
@@ -305,7 +297,6 @@ class Home extends React.Component {
     let scoreAddition = card.side1 + card.side2;
     this.isTimerResetNeeded = false;
     const average = this.calculateAverageOfTurn();
-
     this.setState(prevState => {
       const newBoardMap = this.getUpdatedBoard(
         [...prevState.boardMap],
@@ -325,20 +316,6 @@ class Home extends React.Component {
         average: average
       };
     });
-  }
-
-  getBoardAfterRemovePiece(board, row, col) {
-    board[row][col] = new Card(false);
-    return board;
-  }
-  getCartAfterAddPiece(cart, card, indexCart) {
-    card.valid = undefined;
-    cart[indexCart] = card;
-    return cart;
-  }
-  getCartAfterRemovePiece(cart, indexCart) {
-    cart[indexCart] = new Card(false);
-    return cart;
   }
 
   isTheFirstPiece(row, col, card) {
@@ -392,6 +369,7 @@ class Home extends React.Component {
             cardInBoard.indexCart
           );
           if (this.isGameRunning) {
+            this.redoMoves.pop();
             this.removeAllValidNeighbors(
               cardInBoard.row,
               cardInBoard.col,
@@ -402,7 +380,6 @@ class Home extends React.Component {
               cardInBoard.col,
               cardInBoard.card
             );
-
             if (
               this.isTheFirstPiece(
                 cardInBoard.row,
@@ -413,7 +390,7 @@ class Home extends React.Component {
               newBoardMap = setInitialBoard(57);
           }
         } else if (lastPulledCard) {
-          newCartMap = this.getCartAfterRemovePiece(
+          newCartMap = getCartAfterRemovePiece(
             [...prevState.cartMap],
             lastPulledCard.indexInCart
           );
@@ -461,7 +438,7 @@ class Home extends React.Component {
             cardInBoard.row,
             cardInBoard.col
           );
-          newCartMap = this.getCartAfterRemovePiece(
+          newCartMap = getCartAfterRemovePiece(
             [...prevState.cartMap],
             cardInBoard.indexCart
           );
@@ -526,15 +503,8 @@ class Home extends React.Component {
     );
   }
 
-  NeighborsObj(up, down, left, right) {
-    this.up = up;
-    this.down = down;
-    this.left = left;
-    this.right = right;
-  }
-
   getNeighborsObj(row, col) {
-    let neighborsObj = new this.NeighborsObj(
+    let neighborsObj = new NeighborsObj(
       this.checkNeighborPiece(row - 1, col),
       this.checkNeighborPiece(row + 1, col),
       this.checkNeighborPiece(row, col - 1),
@@ -626,7 +596,7 @@ class Home extends React.Component {
           card: card
         },
         lastPulledCard: null,
-        stats: new this.statsObj(
+        stats: new StatsObj(
           0,
           1,
           side1 + side2,
@@ -734,14 +704,6 @@ class Home extends React.Component {
     return time.minutes * 60 + time.seconds;
   }
 
-  statsObj(withdrawals, turns, scoreToAdd, turnLength, averageTurn) {
-    this.withdrawals = withdrawals;
-    this.turns = turns;
-    this.scoreToAdd = scoreToAdd;
-    this.turnLength = turnLength;
-    this.averageTurnInSecsToAdd = averageTurn;
-  }
-
   getUpdatedCart(cartMap, indexCart) {
     for (let i = 0; i < cartMap.length; i++) {
       if (cartMap[i].valid) cartMap[i].valid = undefined;
@@ -766,7 +728,7 @@ class Home extends React.Component {
         const moveObj = {
           cardInBoard: null,
           lastPulledCard: { card: domino, indexInCart: cartMap.length - 1 },
-          stats: new this.statsObj(1, 1, 0, turnLength, 0)
+          stats: new StatsObj(1, 1, 0, turnLength, 0)
         };
         this.movesHistory.push(moveObj);
       }

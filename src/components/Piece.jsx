@@ -41,7 +41,6 @@ export default Piece;
 
 export const EmptyPiece = () => <div style={{ ...style.container }} />;
 
-//export const ValidPiece = () => <div style={{ ...style.ValidPiece }} />;
 export class ValidPiece extends React.Component {
   constructor(props) {
     super(props);

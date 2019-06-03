@@ -67,12 +67,22 @@ class DominoStack {
     this.numberOfDrawnFromStack = -7;
   }
 }
-class Card {
+export class Card {
   constructor(i_Valid, i_Side1, i_Side2, i_IsLaying) {
     this.valid = i_Valid;
     this.side1 = i_Side1;
     this.side2 = i_Side2;
     this.isLaying = i_IsLaying;
+  }
+}
+
+export class StatsObj {
+  constructor(withdrawals, turns, scoreToAdd, turnLength, averageTurn) {
+    this.withdrawals = withdrawals;
+    this.turns = turns;
+    this.scoreToAdd = scoreToAdd;
+    this.turnLength = turnLength;
+    this.averageTurnInSecsToAdd = averageTurn;
   }
 }
 
@@ -116,5 +126,38 @@ export const secondsToTime = secs => {
   return obj;
 };
 
+export const removeRowColElementFromArray = (arr, row, col) => {
+  let val = false;
+  for (var idx = 0; idx < arr.length; idx++)
+    if (arr[idx].i === row && arr[idx].j === col) {
+      val = arr[idx].i === row && arr[idx].j === col;
+      arr.splice(idx, 1);
+      break;
+    }
+  return val;
+};
+
+export const getCartAfterRemovePiece = (cart, indexCart) => {
+  cart[indexCart] = new Card(false);
+  return cart;
+};
+
+export const createCopyRow = (matrix, i_Row) => {
+  let size = 0;
+  if (matrix[i_Row]) size = matrix[i_Row].length;
+
+  const array = new Array(size);
+  for (let i = 0; i < size; i++) {
+    array[i] = matrix[i_Row][i];
+  }
+  return array;
+};
+export class NeighborsObj {
+  constructor(up, down, left, right) {
+    this.up = up;
+    this.down = down;
+    this.left = left;
+    this.right = right;
+  }
+}
 export const DominoStackLogic = new DominoStack();
-export default Card;
