@@ -49,7 +49,6 @@ class Timer extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    console.log("im in componentDidUpdate");
     if (
       prevProps.isResetNeeded !== this.props.isResetNeeded &&
       this.props.isResetNeeded
@@ -59,7 +58,6 @@ class Timer extends React.Component {
       this.stopInterval();
       if (this.props.timeToDisplay !== prevProps.timeToDisplay) {
         this.displaySpecificTime({
-          // h: 0,
           minutes: this.props.timeToDisplay.minutes,
           seconds: this.props.timeToDisplay.seconds
         });
